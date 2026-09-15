@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poverty Madness</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+        #ui-bar {
+            width: 900px;
+            background: #222;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-bottom: 2px solid #444;
+        }
+        .hidden { display: none !important; }
+        #canvas-wrapper {
+            position: relative;
+            width: 900px;
+            height: 650px;
+        }
+        canvas {
+            background: #233521;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+            display: block;
+        }
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 900px;
+            height: 650px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+        }
+        #start-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 8px;
+            z-index: 1;
+        }
+        #start-btn {
+            position: relative;
+            z-index: 2;
+            background-color: #ff4d4d;
+            color: white;
+            border: 3px solid #ffffff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        #start-btn:hover {
+            background-color: #ff3333;
+            transform: scale(1.05);
+        }
+        #inventory-bar {
+            width: 900px;
+            background: #1e1e1e;
+            border: 2px solid #444;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+        }
+        .inv-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-right: 5px;
+        }
+        .inv-slots {
+            display: flex;
+            gap: 8px;
+            flex-grow: 1;
+        }
+        .inv-slot {
+            width: 50px;
+            height: 50px;
+            background: #2a2a2a;
+            border: 2px solid #555;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .inv-slot:hover {
+            border-color: #2ed573;
+            background: #333;
+        }
+        .inv-slot .count {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+        #instructions {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(18, 18, 18, 0.95);
+            border: 2px solid #2ed573;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            width: 440px;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+        .modal button.close-btn {
+            background: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 8px 22px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 18px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        #inventory-modal { border-color: #55efc4; }
+        .inv-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        .inv-card {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .inv-card .icon { font-size: 2rem; }
+        .inv-card .name { font-size: 0.8rem; font-weight: bold; margin: 4px 0; }
+        .inv-card .qty { font-size: 0.75rem; color: #aaa; }
+        .inv-card button {
+            background: #2ed573;
+            border: none;
+            color: #111;
+            font-weight: bold;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 6px;
+            width: 100%;
+        }
+        .inv-card button:hover { background: #26af5f; }
+    </style>
+</head>
+<body>
+
+<div id="ui-bar" class="hidden">
+    <div>Day: <span id="ui-day">1</span>/7</div>
+    <div>Money: $<span id="ui-money">150.00</span></div>
+    <div>HP: <span id="ui-hp">70</span>/100</div>
+    <div>Happiness: <span id="ui-happy">70</span>/100</div>
+</div>
+
+<div id="canvas-wrapper">
+    <div id="start-screen">
+        <canvas id="start-canvas" width="900" height="650"></canvas>
+        <button id="start-btn" onclick="startGame()">START GAME</button>
+    </div>
+
+    <canvas id="gameCanvas" width="900" height="650" class="hidden"></canvas>
+    
+    <div id="inventory-modal" class="modal">
+        <h2 style="margin-top:0; color:#55efc4;">Backpack Inventory</h2>
+        <div id="inv-modal-grid" class="inv-grid"></div>
+        <button class="close-btn" onclick="toggleInventoryModal(false)">Close (E or ESC)</button>
+    </div>
+
+    <div id="game-over-modal" class="modal" style="border-color: #ff4d4d;">
+        <h2 id="modal-title">Game Over</h2>
+        <p id="modal-msg"></p>
+        <button class="close-btn" onclick="restartGame()">Try Again</button>
+    </div>
+</div>
+
+<div id="inventory-bar" class="hidden">
+    <div class="inv-title">Inventory</div>
+    <div class="inv-slots" id="hotbar-slots"></div>
+</div>
+
+<div id="instructions" class="hidden">
+    <strong>Controls:</strong> WASD / Arrow Keys to Move. Press <strong>E</strong> to interact / enter shops / chop trees / open inventory.
+</div>
+
+<script>
+// --- TITLE MENU ART ---
+const startCanvas = document.getElementById("start-canvas");
+const sCtx = startCanvas.getContext("2d");
+
+function drawTitleArt() {
+    const bgGradient = sCtx.createLinearGradient(0, 0, 0, 650);
+    bgGradient.addColorStop(0, "#cbeef7");
+    bgGradient.addColorStop(1, "#8ecae6");
+    sCtx.fillStyle = bgGradient;
+    sCtx.fillRect(0, 0, 900, 650);
+
+    drawFireLayer("#ff4500", 500, 40);
+    drawFireLayer("#ff8c00", 520, 30);
+    drawFireLayer("#ffd700", 540, 20);
+
+    sCtx.textAlign = "center";
+    sCtx.lineWidth = 6;
+    sCtx.strokeStyle = "#000";
+    sCtx.font = "900 60px 'Trebuchet MS', sans-serif";
+    sCtx.strokeText("POVERTY MADNESS", 450, 110);
+    sCtx.fillStyle = "#111";
+    sCtx.fillText("POVERTY MADNESS", 450, 110);
+
+    sCtx.font = "italic bold 22px 'Trebuchet MS', sans-serif";
+    sCtx.fillStyle = "#222";
+    sCtx.fillText("money is not a game.", 450, 150);
+
+    drawBrokenBottle(230, 290);
+    drawPaperBall(720, 240);
+    drawPaperBall(750, 340);
+
+    const cx = 450, cy = 370;
+    sCtx.lineWidth = 4; sCtx.strokeStyle = "#000"; sCtx.fillStyle = "#333";
+    sCtx.beginPath(); sCtx.roundRect(cx - 20, cy + 80, 16, 80, 8); sCtx.roundRect(cx + 4, cy + 80, 16, 80, 8); sCtx.fill(); sCtx.stroke();
+    sCtx.fillStyle = "#1e1e1e"; sCtx.beginPath(); sCtx.roundRect(cx - 30, cy, 60, 90, 10); sCtx.fill(); sCtx.stroke();
+    sCtx.fillStyle = "#e63946"; sCtx.beginPath(); sCtx.moveTo(cx - 6, cy + 10); sCtx.lineTo(cx + 6, cy + 10); sCtx.lineTo(cx + 8, cy + 65); sCtx.lineTo(cx, cy + 75); sCtx.lineTo(cx - 8, cy + 65); sCtx.closePath(); sCtx.fill(); sCtx.stroke();
+    sCtx.fillStyle = "#1e1e1e";
+    sCtx.beginPath(); sCtx.moveTo(cx - 28, cy + 20); sCtx.quadraticCurveTo(cx - 55, cy - 10, cx - 60, cy - 20); sCtx.lineTo(cx - 45, cy - 25); sCtx.quadraticCurveTo(cx - 40, cy - 5, cx - 28, cy + 35); sCtx.fill(); sCtx.stroke();
+    sCtx.beginPath(); sCtx.moveTo(cx + 28, cy + 20); sCtx.quadraticCurveTo(cx + 55, cy - 10, cx + 60, cy - 20); sCtx.lineTo(cx + 45, cy - 25); sCtx.quadraticCurveTo(cx + 40, cy - 5, cx + 28, cy + 35); sCtx.fill(); sCtx.stroke();
+    sCtx.fillStyle = "#ffb703"; sCtx.beginPath(); sCtx.arc(cx - 52, cy - 23, 8, 0, Math.PI * 2); sCtx.arc(cx + 52, cy - 23, 8, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+    sCtx.beginPath(); sCtx.arc(cx, cy - 25, 26, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+    sCtx.fillStyle = "#000"; sCtx.beginPath(); sCtx.arc(cx - 9, cy - 30, 4, 0, Math.PI * 2); sCtx.arc(cx + 9, cy - 30, 4, 0, Math.PI * 2); sCtx.fill();
+    sCtx.beginPath(); sCtx.arc(cx, cy - 18, 12, 0.1 * Math.PI, 0.9 * Math.PI); sCtx.lineWidth = 3; sCtx.stroke();
+    sCtx.fillStyle = "#111"; sCtx.beginPath(); sCtx.ellipse(cx, cy - 48, 38, 8, 0, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+    sCtx.beginPath(); sCtx.roundRect(cx - 24, cy - 105, 48, 58, [8, 8, 0, 0]); sCtx.fill(); sCtx.stroke();
+}
+
+function drawFireLayer(color, startY, amplitude) {
+    sCtx.fillStyle = color; sCtx.beginPath(); sCtx.moveTo(0, 650);
+    for (let x = 0; x <= 900; x += 40) {
+        const peak = startY - (Math.sin(x * 0.05) * amplitude + Math.random() * 15);
+        sCtx.quadraticCurveTo(x - 20, peak, x, startY);
+    }
+    sCtx.lineTo(900, 650); sCtx.fill();
+}
+
+function drawBrokenBottle(x, y) {
+    sCtx.save(); sCtx.translate(x, y); sCtx.rotate(-0.3); sCtx.fillStyle = "#2d6a4f"; sCtx.strokeStyle = "#000"; sCtx.lineWidth = 3;
+    sCtx.beginPath(); sCtx.moveTo(-15, -20); sCtx.lineTo(15, -20); sCtx.lineTo(20, 10); sCtx.lineTo(5, 5); sCtx.lineTo(-10, 20); sCtx.lineTo(-20, 0); sCtx.closePath(); sCtx.fill(); sCtx.stroke();
+    sCtx.beginPath(); sCtx.moveTo(-35, -5); sCtx.lineTo(-25, -5); sCtx.moveTo(-38, 5); sCtx.lineTo(-28, 5); sCtx.stroke(); sCtx.restore();
+}
+
+function drawPaperBall(x, y) {
+    sCtx.fillStyle = "#e9ecef"; sCtx.strokeStyle = "#000"; sCtx.lineWidth = 2; sCtx.beginPath(); sCtx.arc(x, y, 12, 0, Math.PI * 2); sCtx.fill(); sCtx.stroke();
+    sCtx.beginPath(); sCtx.moveTo(x - 5, y - 4); sCtx.lineTo(x + 2, y + 5); sCtx.moveTo(x + 3, y - 6); sCtx.lineTo(x - 4, y + 3); sCtx.stroke();
+}
+
+drawTitleArt();
+
+// --- GAME LOGIC ---
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const MAP_WIDTH = 2000;
+const MAP_HEIGHT = 1600;
+
+let day = 1, money = 150.0, hp = 70, happy = 70;
+let workedToday = false, gameOver = false, gameRunning = false;
+let currentScene = 'CITY';
+let inventoryOpen = false;
+
+const inventory = [];
+
+const player = { 
+    x: 1000, 
+    y: 800, 
+    size: 6, 
+    speed: 2.1, 
+    direction: 'BACKWARD',
+    isMoving: false,
+    animTimer: 0
+};
+
+const camera = { x: 0, y: 0 };
+const keys = {};
+
+const skinTones = ["#ffdbac", "#f1c27d", "#e0ac69", "#c68642", "#8d5524", "#4a2c11"];
+const hairColors = ["#090806", "#2c221e", "#3b302a", "#a56b46", "#b55239", "#e6be8a", "#9a9a9a", "#5a005a"];
+const shirtColors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#1abc9c", "#e67e22", "#34495e"];
+const pantsColors = ["#2c3e50", "#7f8c8d", "#16a085", "#8e44ad", "#d35400", "#27ae60", "#2b2b2b"];
+const hairStyles = ["SHORT", "AFRO", "LONG", "BUN"];
+
+function getRandomAppearance() {
+    return {
+        skin: skinTones[Math.floor(Math.random() * skinTones.length)],
+        hair: hairColors[Math.floor(Math.random() * hairColors.length)],
+        shirt: shirtColors[Math.floor(Math.random() * shirtColors.length)],
+        pants: pantsColors[Math.floor(Math.random() * pantsColors.length)],
+        style: hairStyles[Math.floor(Math.random() * hairStyles.length)]
+    };
+}
+
+const buildings = [
+    { name: "Grocery Store", type: "STORE", x: 200, y: 180, w: 240, h: 160, color: "#27ae60", trim: "#1e8449", action: () => enterShop('GROCERY'), text: "Enter Grocery Store" },
+    { name: "Hardware Store", type: "HARDWARE", x: 900, y: 180, w: 240, h: 160, color: "#d35400", trim: "#a04000", action: () => enterShop('HARDWARE'), text: "Enter Hardware Store" },
+    { name: "Thrift Store", type: "THRIFT", x: 1500, y: 180, w: 240, h: 160, color: "#e67e22", trim: "#b9590e", action: () => enterShop('THRIFT'), text: "Enter Thrift Shop" },
+    { name: "Fast Food", type: "DINER", x: 1500, y: 1080, w: 240, h: 160, color: "#ff4757", trim: "#d63031", action: () => enterShop('FASTFOOD'), text: "Enter Fast Food Diner" },
+    { name: "Workplace", type: "OFFICE", x: 200, y: 1080, w: 240, h: 160, color: "#1e90ff", trim: "#0984e3", action: () => enterShop('WORK'), text: "Enter Workplace Office" },
+    { name: "Pharmacy", type: "PHARMACY", x: 680, y: 1080, w: 240, h: 160, color: "#a55eea", trim: "#8e44ad", action: () => enterShop('PHARMACY'), text: "Enter Pharmacy" }
+];
+
+const parks = [
+    { name: "City Park", x: 500, y: 450, w: 320, h: 220, action: relaxInPark, text: "Rest in Park Zone [+10 Happy]" },
+    { name: "Riverside Park", x: 1180, y: 450, w: 320, h: 220, action: relaxInPark, text: "Rest in Park Zone [+10 Happy]" }
+];
+
+const busStops = [
+    { x: 860, y: 695, w: 75, h: 50, name: "North Stop" },
+    { x: 1070, y: 855, w: 75, h: 50, name: "South Stop" }
+];
+
+const trees = [];
+function generateTrees() {
+    for (let i = 0; i < 45; i++) {
+        trees.push({
+            id: i,
+            x: Math.random() * (MAP_WIDTH - 100) + 50,
+            y: Math.random() * (MAP_HEIGHT - 100) + 50,
+            radius: 18 + Math.random() * 8,
+            hp: 3
+        });
+    }
+}
+generateTrees();
+
+let activeInteraction = null;
+
+const groceryAisles = [
+    { x: 180, y: 120, w: 60, h: 360, label: "Produce (Fruits)" },
+    { x: 380, y: 120, w: 60, h: 360, label: "Veggies & Bread" },
+    { x: 580, y: 120, w: 60, h: 360, label: "Dairy & Snacks" }
+];
+const groceryItemsMap = [
+    { id: 'apple', name: "Fresh Apples", icon: "🍎", price: 3.50, hp: 6, happy: 2, type: 'food', x: 180, y: 160, w: 60, h: 60 },
+    { id: 'banana', name: "Bananas", icon: "🍌", price: 2.50, hp: 5, happy: 1, type: 'food', x: 180, y: 280, w: 60, h: 60 },
+    { id: 'broccoli', name: "Organic Broccoli", icon: "🥦", price: 4.00, hp: 8, happy: 0, type: 'food', x: 380, y: 160, w: 60, h: 60 },
+    { id: 'bread', name: "Fresh Bread", icon: "🍞", price: 5.00, hp: 10, happy: 2, type: 'food', x: 380, y: 280, w: 60, h: 60 },
+    { id: 'milk', name: "Whole Milk", icon: "🥛", price: 4.50, hp: 7, happy: 1, type: 'food', x: 580, y: 160, w: 60, h: 60 },
+    { id: 'carrot', name: "Carrots", icon: "🥕", price: 3.00, hp: 5, happy: 1, type: 'food', x: 580, y: 280, w: 60, h: 60 }
+];
+
+const hardwareAisles = [
+    { x: 200, y: 150, w: 80, h: 320, label: "Power Tools" },
+    { x: 420, y: 150, w: 80, h: 320, label: "Raw Materials" },
+    { x: 640, y: 150, w: 80, h: 320, label: "Heavy Equipment" }
+];
+const hardwareItemsMap = [
+    { id: 'axe', name: "Woodcutter Axe", icon: "🪓", price: 25.00, hp: 0, happy: 0, type: 'tool', desc: 'Used to chop trees!', x: 200, y: 200, w: 80, h: 60 },
+    { id: 'hammer', name: "Steel Hammer", icon: "🔨", price: 15.00, hp: 0, happy: 0, type: 'tool', desc: 'Sturdy tool', x: 200, y: 320, w: 80, h: 60 },
+    { id: 'nails', name: "Box of Nails", icon: "🔩", price: 5.00, hp: 0, happy: 0, type: 'material', desc: 'Crafting material', x: 420, y: 200, w: 80, h: 60 },
+    { id: 'planks', name: "Wood Planks", icon: "🪵", price: 12.00, hp: 0, happy: 0, type: 'material', desc: 'Building supply', x: 420, y: 320, w: 80, h: 60 },
+    { id: 'rope', name: "Heavy Duty Rope", icon: "🪢", price: 8.00, hp: 0, happy: 0, type: 'material', desc: 'Multi-purpose rope', x: 640, y: 200, w: 80, h: 60 },
+    { id: 'pickaxe', name: "Mining Pickaxe", icon: "⛏️", price: 30.00, hp: 0, happy: 0, type: 'tool', desc: 'Heavy duty pick', x: 640, y: 320, w: 80, h: 60 }
+];
+
+const thriftItemsMap = [
+    { id: 'jacket', name: "Warm Jacket", icon: "🧥", price: 18.00, hp: 5, happy: 15, type: 'gear', x: 250, y: 220, w: 80, h: 60 },
+    { id: 'books', name: "Used Books", icon: "📚", price: 8.00, hp: 0, happy: 20, type: 'item', x: 450, y: 220, w: 80, h: 60 },
+    { id: 'radio', name: "Retro Radio", icon: "📻", price: 22.00, hp: 0, happy: 25, type: 'item', x: 650, y: 220, w: 80, h: 60 }
+];
+
+const fastFoodItemsMap = [
+    { id: 'burger', name: "Greasy Burger", icon: "🍔", price: 8.00, hp: -2, happy: 12, type: 'food', x: 250, y: 220, w: 80, h: 60 },
+    { id: 'fries', name: "French Fries", icon: "🍟", price: 4.00, hp: -1, happy: 8, type: 'food', x: 450, y: 220, w: 80, h: 60 },
+    { id: 'pizza', name: "Pizza Slice", icon: "🍕", price: 6.00, hp: -1, happy: 10, type: 'food', x: 650, y: 220, w: 80, h: 60 }
+];
+
+const pharmacyItemsMap = [
+    { id: 'meds', name: "Painkillers", icon: "💊", price: 25.00, hp: 30, happy: 0, type: 'med', x: 300, y: 220, w: 80, h: 60 },
+    { id: 'firstaid', name: "First Aid Kit", icon: "🩹", price: 40.00, hp: 50, happy: 5, type: 'med', x: 550, y: 220, w: 80, h: 60 }
+];
+
+const shopNPCs = [];
+for (let i = 0; i < 6; i++) {
+    shopNPCs.push({
+        x: 100 + Math.random() * 700,
+        y: 150 + Math.random() * 350,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2,
+        dir: 'BACKWARD',
+        animTimer: Math.random() * 100,
+        look: getRandomAppearance()
+    });
+}
+
+const trafficSignal = { horizontal: 'GREEN', vertical: 'RED', timer: 0 };
+const roads = [
+    { x: 0, y: 750, w: MAP_WIDTH, h: 100 },
+    { x: 950, y: 0, w: 100, h: MAP_HEIGHT }
+];
+const cars = [];
+const carColors = ['#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#1abc9c', '#e67e22', '#34495e', '#ecf0f1'];
+
+function spawnCar(lane) {
+    const baseSpeed = 1.2 + Math.random() * 0.8;
+    let car = { w: 46, h: 22, maxSpeed: baseSpeed, speed: baseSpeed, color: carColors[Math.floor(Math.random() * carColors.length)], lane: lane };
+    if (lane === 0) { car.x = MAP_WIDTH + 60; car.y = 765; car.dirX = -1; car.dirY = 0; }
+    else if (lane === 1) { car.x = -60; car.y = 815; car.dirX = 1; car.dirY = 0; }
+    else if (lane === 2) { car.w = 22; car.h = 46; car.x = 1015; car.y = MAP_HEIGHT + 60; car.dirX = 0; car.dirY = -1; }
+    else if (lane === 3) { car.w = 22; car.h = 46; car.x = 965; car.y = -60; car.dirX = 0; car.dirY = 1; }
+    cars.push(car);
+}
+for (let i = 0; i < 6; i++) spawnCar(i % 4);
+
+const peds = [];
+for (let i = 0; i < 16; i++) {
+    peds.push({
+        x: Math.random() * (MAP_WIDTH - 40) + 20,
+        y: Math.random() * (MAP_HEIGHT - 40) + 20,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
+        dir: 'BACKWARD',
+        changeTimer: Math.random() * 100,
+        animTimer: Math.random() * 100,
+        look: getRandomAppearance()
+    });
+}
+
+function addItemToInventory(item) {
+    const existing = inventory.find(i => i.id === item.id);
+    if (existing) {
+        existing.qty++;
+    } else {
+        inventory.push({ ...item, qty: 1 });
+    }
+    updateInventoryUI();
+}
+
+function useInventoryItem(id) {
+    const idx = inventory.findIndex(i => i.id === id);
+    if (idx !== -1) {
+        const item = inventory[idx];
+        if (item.type === 'tool') return;
+        hp = Math.min(100, Math.max(0, hp + (item.hp || 0)));
+        happy = Math.min(100, Math.max(0, happy + (item.happy || 0)));
+        item.qty--;
+        if (item.qty <= 0) inventory.splice(idx, 1);
+        updateUI();
+        updateInventoryUI();
+        checkStatus();
+    }
+}
+
+function hasAxe() { return inventory.some(i => i.id === 'axe' && i.qty > 0); }
+
+function updateInventoryUI() {
+    const hotbarContainer = document.getElementById("hotbar-slots");
+    hotbarContainer.innerHTML = "";
+    for (let i = 0; i < 10; i++) {
+        const slot = document.createElement("div");
+        slot.className = "inv-slot";
+        if (inventory[i]) {
+            slot.innerHTML = `${inventory[i].icon}<span class="count">${inventory[i].qty}</span>`;
+            slot.title = `${inventory[i].name} (Click to Use)`;
+            slot.onclick = () => useInventoryItem(inventory[i].id);
+        }
+        hotbarContainer.appendChild(slot);
+    }
+
+    const gridContainer = document.getElementById("inv-modal-grid");
+    gridContainer.innerHTML = "";
+    if (inventory.length === 0) {
+        gridContainer.innerHTML = `<div style="grid-column:1/-1; color:#888; padding:20px;">Your backpack is empty!</div>`;
+    } else {
+        inventory.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "inv-card";
+            card.innerHTML = `
+                <div class="icon">${item.icon}</div>
+                <div class="name">${item.name}</div>
+                <div class="qty">Qty: ${item.qty}</div>
+            `;
+            const btn = document.createElement("button");
+            btn.textContent = item.type === 'tool' ? "Tool" : "Use / Consume";
+            if (item.type !== 'tool') {
+                btn.onclick = () => useInventoryItem(item.id);
+            } else {
+                btn.style.background = '#888';
+            }
+            card.appendChild(btn);
+            gridContainer.appendChild(card);
+        });
+    }
+}
+
+function toggleInventoryModal(show) {
+    inventoryOpen = (show !== undefined) ? show : !inventoryOpen;
+    const modal = document.getElementById("inventory-modal");
+    if (inventoryOpen) {
+        updateInventoryUI();
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}
+
+window.addEventListener("keydown", (e) => {
+    const k = e.key;
+    const keyKey = (k.startsWith('Arrow') || k === 'Escape') ? k : k.toLowerCase();
+    keys[keyKey] = true;
+
+    if (keyKey === 'e' && !gameOver && gameRunning) {
+        if (activeInteraction) {
+            activeInteraction.action();
+            updateUI();
+            checkStatus();
+        } else {
+            toggleInventoryModal();
+        }
+    } else if (keyKey === 'Escape' && inventoryOpen) {
+        toggleInventoryModal(false);
+    }
+});
+
+window.addEventListener("keyup", (e) => { 
+    const k = e.key;
+    const keyKey = (k.startsWith('Arrow') || k === 'Escape') ? k : k.toLowerCase();
+    keys[keyKey] = false; 
+});
+
+function startGame() {
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("ui-bar").classList.remove("hidden");
+    document.getElementById("gameCanvas").classList.remove("hidden");
+    document.getElementById("inventory-bar").classList.remove("hidden");
+    document.getElementById("instructions").classList.remove("hidden");
+    gameRunning = true;
+    updateUI();
+    updateInventoryUI();
+    loop();
+}
+
+function updateUI() {
+    document.getElementById("ui-day").textContent = day;
+    document.getElementById("ui-money").textContent = money.toFixed(2);
+    document.getElementById("ui-hp").textContent = hp;
+    document.getElementById("ui-happy").textContent = happy;
+}
+
+function enterShop(sceneName) {
+    currentScene = sceneName;
+    player.x = 450;
+    player.y = 580;
+}
+
+function exitShop(returnX, returnY) {
+    currentScene = 'CITY';
+    player.x = returnX;
+    player.y = returnY;
+}
+
+function buyShopItem(item) {
+    if (money >= item.price) {
+        money -= item.price;
+        addItemToInventory(item);
+    }
+}
+
+function chopTree(tree) {
+    if (!hasAxe()) return;
+    tree.hp--;
+    if (tree.hp <= 0) {
+        addItemToInventory({ id: 'wood', name: "Wood Log", icon: "🪵", price: 5, hp: 0, happy: 0, type: 'material' });
+        tree.x = Math.random() * (MAP_WIDTH - 100) + 50;
+        tree.y = Math.random() * (MAP_HEIGHT - 100) + 50;
+        tree.hp = 3;
+    }
+}
+
+function workShift() { 
+    if (!workedToday) { 
+        money += 40; 
+        happy -= 15; 
+        workedToday = true; 
+    } 
+}
+
+function relaxInPark() { happy = Math.min(100, happy + 10); }
+
+function checkStatus() {
+    if (money < 0) endGame("Game Over", "You went into debt!");
+    if (hp <= 0) endGame("Game Over", "You collapsed from illness!");
+    if (happy <= 0) endGame("Game Over", "You suffered extreme burnout!");
+}
+
+function endGame(title, msg) {
+    gameOver = true;
+    document.getElementById("modal-title").textContent = title;
+    document.getElementById("modal-msg").textContent = msg;
+    document.getElementById("game-over-modal").style.display = "block";
+}
+
+function restartGame() {
+    day = 1; money = 150.0; hp = 70; happy = 70;
+    workedToday = false; gameOver = false; currentScene = 'CITY';
+    inventoryOpen = false; inventory.length = 0;
+    player.x = 1000; player.y = 800; player.direction = 'BACKWARD';
+    document.getElementById("game-over-modal").style.display = "none";
+    document.getElementById("inventory-modal").style.display = "none";
+    updateUI();
+    updateInventoryUI();
+}
+
+function update() {
+    if (gameOver || !gameRunning || inventoryOpen) return;
+
+    let dx = 0, dy = 0;
+    if (keys['w'] || keys['ArrowUp']) { dy -= 1; player.direction = 'FORWARD'; }
+    if (keys['s'] || keys['ArrowDown']) { dy += 1; player.direction = 'BACKWARD'; }
+    if (keys['a'] || keys['ArrowLeft']) { dx -= 1; player.direction = 'LEFT'; }
+    if (keys['d'] || keys['ArrowRight']) { dx += 1; player.direction = 'RIGHT'; }
+
+    player.isMoving = (dx !== 0 || dy !== 0);
+    if (player.isMoving) {
+        player.x += dx * player.speed;
+        player.y += dy * player.speed;
+        player.animTimer += 0.2;
+    }
+
+    activeInteraction = null;
+
+    if (currentScene === 'CITY') {
+        player.x = Math.max(player.size, Math.min(MAP_WIDTH - player.size, player.x));
+        player.y = Math.max(player.size, Math.min(MAP_HEIGHT - player.size, player.y));
+
+        camera.x = player.x - canvas.width / 2;
+        camera.y = player.y - canvas.height / 2;
+        camera.x = Math.max(0, Math.min(MAP_WIDTH - canvas.width, camera.x));
+        camera.y = Math.max(0, Math.min(MAP_HEIGHT - canvas.height, camera.y));
+
+        updateTrafficLights();
+
+        buildings.forEach(b => {
+            const centerX = b.x + b.w / 2, centerY = b.y + b.h / 2;
+            if (Math.hypot(player.x - centerX, player.y - centerY) < 110) activeInteraction = b;
+        });
+
+        parks.forEach(pk => {
+            const centerX = pk.x + pk.w / 2, centerY = pk.y + pk.h / 2;
+            if (Math.hypot(player.x - centerX, player.y - centerY) < 100) activeInteraction = pk;
+        });
+
+        trees.forEach(t => {
+            if (Math.hypot(player.x - t.x, player.y - t.y) < 35) {
+                if (hasAxe()) {
+                    activeInteraction = { text: "Chop Tree (Axe)", action: () => chopTree(t) };
+                } else {
+                    activeInteraction = { text: "Requires Axe from Hardware Store to chop", action: () => {} };
+                }
+            }
+        });
+
+        cars.forEach((car, index) => {
+            let stopForLight = false;
+            let stopForCar = false;
+
+            // Check traffic signals
+            if (car.dirX < 0 && car.x > 1050 && car.x < 1100 && trafficSignal.horizontal === 'RED') stopForLight = true;
+            if (car.dirX > 0 && car.x < 900 && car.x > 850 && trafficSignal.horizontal === 'RED') stopForLight = true;
+            if (car.dirY < 0 && car.y > 850 && car.y < 900 && trafficSignal.vertical === 'RED') stopForLight = true;
+            if (car.dirY > 0 && car.y < 700 && car.y > 650 && trafficSignal.vertical === 'RED') stopForLight = true;
+
+            // Safe Distancing Feature: Check for leading cars in same lane
+            const SAFE_DISTANCE = 50;
+            cars.forEach((otherCar) => {
+                if (car === otherCar || car.lane !== otherCar.lane) return;
+                if (car.dirX < 0 && otherCar.x < car.x && (car.x - otherCar.x) < SAFE_DISTANCE) stopForCar = true;
+                if (car.dirX > 0 && otherCar.x > car.x && (otherCar.x - car.x) < SAFE_DISTANCE) stopForCar = true;
+                if (car.dirY < 0 && otherCar.y < car.y && (car.y - otherCar.y) < SAFE_DISTANCE) stopForCar = true;
+                if (car.dirY > 0 && otherCar.y > car.y && (otherCar.y - car.y) < SAFE_DISTANCE) stopForCar = true;
+            });
+
+            if (!stopForLight && !stopForCar) {
+                car.x += car.dirX * car.speed; 
+                car.y += car.dirY * car.speed;
+            }
+
+            if (car.x < -70 || car.x > MAP_WIDTH + 70 || car.y < -70 || car.y > MAP_HEIGHT + 70) {
+                cars.splice(index, 1); 
+                spawnCar(Math.floor(Math.random() * 4));
+            }
+
+            if (player.x + player.size > car.x - car.w/2 && player.x - player.size < car.x + car.w/2 &&
+                player.y + player.size > car.y - car.h/2 && player.y - player.size < car.y + car.h/2) {
+                hp -= 15; updateUI(); checkStatus();
+                player.x += car.dirX * 15; player.y += car.dirY * 15;
+            }
+        });
+
+        peds.forEach(p => {
+            p.x += p.vx; p.y += p.vy; 
+            p.animTimer += 0.15;
+            p.changeTimer--;
+            if (p.changeTimer <= 0) {
+                p.vx = (Math.random() - 0.5) * 0.8; p.vy = (Math.random() - 0.5) * 0.8;
+                p.changeTimer = Math.random() * 120 + 30;
+                p.dir = Math.abs(p.vx) > Math.abs(p.vy) ? (p.vx > 0 ? 'RIGHT' : 'LEFT') : (p.vy > 0 ? 'BACKWARD' : 'FORWARD');
+            }
+            if (p.x < 10 || p.x > MAP_WIDTH - 10) p.vx *= -1;
+            if (p.y < 10 || p.y > MAP_HEIGHT - 10) p.vy *= -1;
+        });
+
+    } else {
+        player.x = Math.max(player.size, Math.min(900 - player.size, player.x));
+        player.y = Math.max(player.size, Math.min(650 - player.size, player.y));
+
+        shopNPCs.forEach(s => {
+            s.x += s.vx; s.y += s.vy;
+            s.animTimer += 0.15;
+            if (s.x < 50 || s.x > 850) { s.vx *= -1; s.dir = s.vx > 0 ? 'RIGHT' : 'LEFT'; }
+            if (s.y < 100 || s.y > 550) { s.vy *= -1; s.dir = s.vy > 0 ? 'BACKWARD' : 'FORWARD'; }
+        });
+
+        if (player.y > 600 && player.x > 400 && player.x < 500) {
+            let exitPos = { x: 1000, y: 800 };
+            if (currentScene === 'GROCERY') exitPos = { x: 320, y: 380 };
+            else if (currentScene === 'HARDWARE') exitPos = { x: 1020, y: 380 };
+            else if (currentScene === 'THRIFT') exitPos = { x: 1620, y: 380 };
+            else if (currentScene === 'FASTFOOD') exitPos = { x: 1620, y: 1280 };
+            else if (currentScene === 'WORK') exitPos = { x: 320, y: 1280 };
+            else if (currentScene === 'PHARMACY') exitPos = { x: 800, y: 1280 };
+
+            activeInteraction = { text: "Exit Building", action: () => exitShop(exitPos.x, exitPos.y) };
+        }
+
+        let activeItemsList = [];
+        if (currentScene === 'GROCERY') activeItemsList = groceryItemsMap;
+        else if (currentScene === 'HARDWARE') activeItemsList = hardwareItemsMap;
+        else if (currentScene === 'THRIFT') activeItemsList = thriftItemsMap;
+        else if (currentScene === 'FASTFOOD') activeItemsList = fastFoodItemsMap;
+        else if (currentScene === 'PHARMACY') activeItemsList = pharmacyItemsMap;
+
+        activeItemsList.forEach(item => {
+            const centerX = item.x + item.w / 2, centerY = item.y + item.h / 2;
+            if (Math.hypot(player.x - centerX, player.y - centerY) < 45) {
+                activeInteraction = {
+                    text: `Buy ${item.name} ($${item.price.toFixed(2)})`,
+                    action: () => buyShopItem(item)
+                };
+            }
+        });
+
+        if (currentScene === 'WORK') {
+            if (Math.hypot(player.x - 450, player.y - 250) < 60) {
+                activeInteraction = {
+                    text: workedToday ? "Shift completed today!" : "Work Shift [+$40]",
+                    action: workShift
+                };
+            }
+        }
+    }
+}
+
+function updateTrafficLights() {
+    trafficSignal.timer++;
+    if (trafficSignal.timer < 240) { trafficSignal.horizontal = 'GREEN'; trafficSignal.vertical = 'RED'; }
+    else if (trafficSignal.timer < 320) { trafficSignal.horizontal = 'YELLOW'; trafficSignal.vertical = 'RED'; }
+    else if (trafficSignal.timer < 560) { trafficSignal.horizontal = 'RED'; trafficSignal.vertical = 'GREEN'; }
+    else if (trafficSignal.timer < 640) { trafficSignal.horizontal = 'RED'; trafficSignal.vertical = 'YELLOW'; }
+    else { trafficSignal.timer = 0; }
+}
+
+function drawCharacter(c, x, y, dir, customLook = null, isMoving = true, animTimer = 0) {
+    c.save();
+    c.translate(x, y);
+    c.scale(0.55, 0.55);
+
+    const skinColor = customLook ? customLook.skin : "#e59866";
+    const shirtColor = customLook ? customLook.shirt : "#b06e37";
+    const pantsColor = customLook ? customLook.pants : "#874d22";
+    const hairColor = customLook ? customLook.hair : "#111111";
+    const style = customLook ? customLook.style : "SHORT";
+    const shoeColor = shirtColor;
+
+    const legSway = isMoving ? Math.sin(animTimer) * 6 : 0;
+    const armSway = isMoving ? Math.sin(animTimer) * 5 : 0;
+
+    c.lineWidth = 3;
+    c.strokeStyle = "#000000";
+    c.lineJoin = "round";
+    c.lineCap = "round";
+
+    function drawHair(d) {
+        c.fillStyle = hairColor;
+        if (style === "SHORT") {
+            if (d === 'BACKWARD') {
+                c.beginPath(); c.arc(0, -23, 12.5, Math.PI * 1.15, Math.PI * 1.85); c.fill(); c.stroke();
+            } else if (d === 'FORWARD') {
+                c.beginPath(); c.arc(0, -20, 13, 0, Math.PI * 2); c.fill(); c.stroke();
+            } else if (d === 'LEFT') {
+                c.beginPath(); c.arc(-2, -22, 12.5, Math.PI * 0.75, Math.PI * 1.6); c.fill(); c.stroke();
+            } else if (d === 'RIGHT') {
+                c.beginPath(); c.arc(2, -22, 12.5, Math.PI * 1.4, Math.PI * 2.25); c.fill(); c.stroke();
+            }
+        } else if (style === "AFRO") {
+            c.beginPath(); c.arc(0, -25, 16, 0, Math.PI * 2); c.fill(); c.stroke();
+        } else if (style === "BUN") {
+            c.beginPath(); c.arc(0, -22, 13, 0, Math.PI * 2); c.fill(); c.stroke();
+            c.beginPath(); c.arc(0, -35, 7, 0, Math.PI * 2); c.fill(); c.stroke();
+        } else if (style === "LONG") {
+            c.beginPath(); c.arc(0, -22, 13, Math.PI * 1.0, Math.PI * 2.0); c.fill(); c.stroke();
+            c.beginPath(); c.rect(-12, -22, 6, 18); c.fill(); c.stroke();
+            c.beginPath(); c.rect(6, -22, 6, 18); c.fill(); c.stroke();
+        }
+    }
+
+    if (dir === 'BACKWARD') {
+        c.fillStyle = pantsColor;
+        c.beginPath(); c.rect(-10, 8 + legSway, 8, 16); c.fill(); c.stroke();
+        c.beginPath(); c.rect(2, 8 - legSway, 8, 16); c.fill(); c.stroke();
+
+        c.fillStyle = shoeColor;
+        c.beginPath(); c.ellipse(-6, 25 + legSway, 6, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.ellipse(6, 25 - legSway, 6, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = shirtColor;
+        c.beginPath(); c.roundRect(-14, -10, 28, 20, 4); c.fill(); c.stroke();
+
+        c.beginPath(); c.roundRect(-18, -8 - armSway, 6, 16, 3); c.fill(); c.stroke();
+        c.beginPath(); c.roundRect(12, -8 + armSway, 6, 16, 3); c.fill(); c.stroke();
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(-15, 9 - armSway, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.arc(15, 9 + armSway, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(0, -20, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        drawHair('BACKWARD');
+
+        c.fillStyle = "#000000";
+        c.beginPath(); c.arc(-4, -17, 2.5, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(5, -17, 2.5, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.moveTo(-3, -13); c.lineTo(4, -13); c.stroke();
+
+    } else if (dir === 'FORWARD') {
+        c.fillStyle = pantsColor;
+        c.beginPath(); c.rect(-10, 8 - legSway, 8, 16); c.fill(); c.stroke();
+        c.beginPath(); c.rect(2, 8 + legSway, 8, 16); c.fill(); c.stroke();
+
+        c.fillStyle = shoeColor;
+        c.beginPath(); c.ellipse(-6, 25 - legSway, 6, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.ellipse(6, 25 + legSway, 6, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = shirtColor;
+        c.beginPath(); c.roundRect(-14, -10, 28, 20, 4); c.fill(); c.stroke();
+
+        c.beginPath(); c.roundRect(-18, -8 + armSway, 6, 16, 3); c.fill(); c.stroke();
+        c.beginPath(); c.roundRect(12, -8 - armSway, 6, 16, 3); c.fill(); c.stroke();
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(-15, 9 + armSway, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.arc(15, 9 - armSway, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(0, -20, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        drawHair('FORWARD');
+
+    } else if (dir === 'LEFT') {
+        c.fillStyle = pantsColor;
+        c.beginPath(); c.rect(-6 - legSway, 8, 8, 16); c.fill(); c.stroke();
+        c.beginPath(); c.rect(-1 + legSway, 8, 8, 16); c.fill(); c.stroke();
+
+        c.fillStyle = shoeColor;
+        c.beginPath(); c.ellipse(-5 - legSway, 25, 6, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+        c.beginPath(); c.ellipse(1 + legSway, 25, 6, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = shirtColor;
+        c.beginPath(); c.roundRect(-10, -10, 18, 20, 4); c.fill(); c.stroke();
+        c.beginPath(); c.roundRect(-5 + armSway, -6, 6, 16, 3); c.fill(); c.stroke();
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(-2 + armSway, 10, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(-2, -20, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        drawHair('LEFT');
+
+        c.fillStyle = "#000000";
+        c.beginPath(); c.arc(-8, -17, 2.5, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.moveTo(-10, -13); c.lineTo(-5, -12); c.stroke();
+
+    } else if (dir === 'RIGHT') {
+        c.fillStyle = pantsColor;
+        c.beginPath(); c.rect(-7 + legSway, 8, 8, 16); c.fill(); c.stroke();
+        c.beginPath(); c.rect(-2 - legSway, 8, 8, 16); c.fill(); c.stroke();
+
+        c.fillStyle = shirtColor;
+        c.beginPath(); c.roundRect(-8, -10, 18, 20, 4); c.fill(); c.stroke();
+        c.beginPath(); c.roundRect(-1 - armSway, -6, 6, 16, 3); c.fill(); c.stroke();
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(2 - armSway, 10, 3, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        c.fillStyle = skinColor;
+        c.beginPath(); c.arc(2, -20, 12, 0, Math.PI * 2); c.fill(); c.stroke();
+
+        drawHair('RIGHT');
+
+        c.fillStyle = "#000000";
+        c.beginPath(); c.arc(8, -17, 2.5, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.moveTo(5, -12); c.lineTo(10, -13); c.stroke();
+    }
+
+    c.restore();
+}
+
+function drawDetailedCar(car) {
+    ctx.save();
+    ctx.translate(car.x, car.y);
+
+    const isHorizontal = car.dirX !== 0;
+
+    // Headlight Beam
+    ctx.fillStyle = "rgba(255, 255, 180, 0.35)";
+    ctx.beginPath();
+    if (car.dirX < 0) {
+        ctx.moveTo(-car.w/2, -6); ctx.lineTo(-car.w/2 - 60, -20); ctx.lineTo(-car.w/2 - 60, 20); ctx.lineTo(-car.w/2, 6);
+    } else if (car.dirX > 0) {
+        ctx.moveTo(car.w/2, -6); ctx.lineTo(car.w/2 + 60, -20); ctx.lineTo(car.w/2 + 60, 20); ctx.lineTo(car.w/2, 6);
+    } else if (car.dirY < 0) {
+        ctx.moveTo(-6, -car.h/2); ctx.lineTo(-20, -car.h/2 - 60); ctx.lineTo(20, -car.h/2 - 60); ctx.lineTo(6, -car.h/2);
+    } else if (car.dirY > 0) {
+        ctx.moveTo(-6, car.h/2); ctx.lineTo(-20, car.h/2 + 60); ctx.lineTo(20, car.h/2 + 60); ctx.lineTo(6, car.h/2);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Wheels
+    ctx.fillStyle = "#111";
+    if (isHorizontal) {
+        ctx.fillRect(-car.w/2 + 6, -car.h/2 - 2, 9, 3);
+        ctx.fillRect(car.w/2 - 15, -car.h/2 - 2, 9, 3);
+        ctx.fillRect(-car.w/2 + 6, car.h/2 - 1, 9, 3);
+        ctx.fillRect(car.w/2 - 15, car.h/2 - 1, 9, 3);
+    } else {
+        ctx.fillRect(-car.w/2 - 2, -car.h/2 + 6, 3, 9);
+        ctx.fillRect(-car.w/2 - 2, car.h/2 - 15, 3, 9);
+        ctx.fillRect(car.w/2 - 1, -car.h/2 + 6, 3, 9);
+        ctx.fillRect(car.w/2 - 1, car.h/2 - 15, 3, 9);
+    }
+
+    // Main Car Body Shape
+    ctx.fillStyle = car.color;
+    ctx.beginPath();
+    ctx.roundRect(-car.w/2, -car.h/2, car.w, car.h, 5);
+    ctx.fill();
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Car Roof / Cabin
+    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+    if (isHorizontal) {
+        ctx.beginPath();
+        ctx.roundRect(-car.w/4, -car.h/2 + 3, car.w/2, car.h - 6, 3);
+        ctx.fill();
+        ctx.fillStyle = "#87ceeb"; // Windshield accent
+        if (car.dirX > 0) ctx.fillRect(car.w/4 - 3, -car.h/2 + 4, 3, car.h - 8);
+        else ctx.fillRect(-car.w/4, -car.h/2 + 4, 3, car.h - 8);
+    } else {
+        ctx.beginPath();
+        ctx.roundRect(-car.w/2 + 3, -car.h/4, car.w - 6, car.h/2, 3);
+        ctx.fill();
+        ctx.fillStyle = "#87ceeb";
+        if (car.dirY > 0) ctx.fillRect(-car.w/2 + 4, car.h/4 - 3, car.w - 8, 3);
+        else ctx.fillRect(-car.w/2 + 4, -car.h/4, car.w - 8, 3);
+    }
+
+    // Headlight bulbs
+    ctx.fillStyle = "#fff7c2";
+    if (car.dirX < 0) {
+        ctx.fillRect(-car.w/2, -car.h/2 + 2, 3, 4);
+        ctx.fillRect(-car.w/2, car.h/2 - 6, 3, 4);
+    } else if (car.dirX > 0) {
+        ctx.fillRect(car.w/2 - 3, -car.h/2 + 2, 3, 4);
+        ctx.fillRect(car.w/2 - 3, car.h/2 - 6, 3, 4);
+    } else if (car.dirY < 0) {
+        ctx.fillRect(-car.w/2 + 2, -car.h/2, 4, 3);
+        ctx.fillRect(car.w/2 - 6, -car.h/2, 4, 3);
+    } else if (car.dirY > 0) {
+        ctx.fillRect(-car.w/2 + 2, car.h/2 - 3, 4, 3);
+        ctx.fillRect(car.w/2 - 6, car.h/2 - 3, 4, 3);
+    }
+
+    ctx.restore();
+}
+
+function drawDetailedBuilding(b) {
+    ctx.save();
+
+    // Drop Shadow
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillRect(b.x + 8, b.y + 8, b.w, b.h);
+
+    // Main Wall
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+
+    // Roof border / Trim
+    ctx.strokeStyle = b.trim;
+    ctx.lineWidth = 6;
+    ctx.strokeRect(b.x, b.y, b.w, b.h);
+
+    // Architectural Roof Accent lines
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    ctx.fillRect(b.x + 10, b.y + 10, b.w - 20, b.h - 20);
+
+    // Store Entrance / Doors
+    ctx.fillStyle = "#2c3e50";
+    ctx.fillRect(b.x + b.w/2 - 25, b.y + b.h - 18, 50, 18);
+    ctx.fillStyle = "#87ceeb"; // Glass doors
+    ctx.fillRect(b.x + b.w/2 - 22, b.y + b.h - 15, 20, 15);
+    ctx.fillRect(b.x + b.w/2 + 2, b.y + b.h - 15, 20, 15);
+
+    // Store Front Signboard Box
+    ctx.fillStyle = "#1e272e";
+    ctx.fillRect(b.x + 15, b.y + 15, b.w - 30, 36);
+    ctx.strokeStyle = "#f1c40f";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(b.x + 15, b.y + 15, b.w - 30, 36);
+
+    // Text Label
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 13px 'Segoe UI', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(b.name.toUpperCase(), b.x + b.w / 2, b.y + 38);
+
+    ctx.restore();
+}
+
+function drawBusStopShelter(bs) {
+    ctx.save();
+    // Concrete Pad
+    ctx.fillStyle = "#95a5a6";
+    ctx.fillRect(bs.x - 5, bs.y - 5, bs.w + 10, bs.h + 10);
+
+    // Shelter Roof
+    ctx.fillStyle = "rgba(52, 152, 219, 0.7)";
+    ctx.fillRect(bs.x, bs.y, bs.w, bs.h);
+    ctx.strokeStyle = "#2c3e50";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(bs.x, bs.y, bs.w, bs.h);
+
+    // Bench Inside
+    ctx.fillStyle = "#e67e22";
+    ctx.fillRect(bs.x + 10, bs.y + 12, bs.w - 20, 10);
+
+    // Signpost Pole & Sign
+    ctx.fillStyle = "#7f8c8d";
+    ctx.fillRect(bs.x + bs.w - 8, bs.y - 20, 4, 25);
+    ctx.fillStyle = "#e74c3c";
+    ctx.beginPath();
+    ctx.arc(bs.x + bs.w - 6, bs.y - 20, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 8px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText("BUS", bs.x + bs.w - 6, bs.y - 17);
+
+    ctx.restore();
+}
+
+function drawTrafficLightPoles() {
+    const intersectionX = 950;
+    const intersectionY = 750;
+
+    const posts = [
+        { x: intersectionX - 15, y: intersectionY - 20, state: trafficSignal.horizontal },
+        { x: intersectionX + 115, y: intersectionY - 20, state: trafficSignal.vertical },
+        { x: intersectionX - 15, y: intersectionY + 110, state: trafficSignal.vertical },
+        { x: intersectionX + 115, y: intersectionY + 110, state: trafficSignal.horizontal }
+    ];
+
+    posts.forEach(p => {
+        // Base Pole
+        ctx.fillStyle = "#2c3e50";
+        ctx.fillRect(p.x, p.y, 10, 24);
+
+        // Lights
+        ctx.fillStyle = "#111";
+        ctx.fillRect(p.x - 2, p.y - 2, 14, 28);
+
+        // Red
+        ctx.fillStyle = p.state === 'RED' ? '#ff4d4d' : '#441111';
+        ctx.beginPath(); ctx.arc(p.x + 5, p.y + 3, 3.5, 0, Math.PI * 2); ctx.fill();
+
+        // Yellow
+        ctx.fillStyle = p.state === 'YELLOW' ? '#ffb703' : '#443300';
+        ctx.beginPath(); ctx.arc(p.x + 5, p.y + 12, 3.5, 0, Math.PI * 2); ctx.fill();
+
+        // Green
+        ctx.fillStyle = p.state === 'GREEN' ? '#2ed573' : '#003311';
+        ctx.beginPath(); ctx.arc(p.x + 5, p.y + 21, 3.5, 0, Math.PI * 2); ctx.fill();
+    });
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (currentScene === 'CITY') {
+        ctx.save();
+        ctx.translate(-camera.x, -camera.y);
+
+        drawCityScene();
+        drawCharacter(ctx, player.x, player.y, player.direction, null, player.isMoving, player.animTimer);
+
+        ctx.restore();
+        drawMiniMap();
+
+    } else {
+        drawGenericShopScene(currentScene);
+        drawCharacter(ctx, player.x, player.y, player.direction, null, player.isMoving, player.animTimer);
+    }
+
+    if (activeInteraction) {
+        ctx.fillStyle = "rgba(0,0,0,0.85)"; ctx.fillRect(canvas.width / 2 - 200, canvas.height - 75, 400, 50);
+        ctx.fillStyle = "#55efc4"; ctx.font = "bold 14px Segoe UI"; ctx.textAlign = "center";
+        ctx.fillText(`Press E: ${activeInteraction.text}`, canvas.width / 2, canvas.height - 45);
+    }
+}
+
+function drawCityScene() {
+    // Grass Ground
+    ctx.fillStyle = "#233521"; ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+    // Parks
+    parks.forEach(pk => {
+        ctx.fillStyle = "#27ae60"; ctx.fillRect(pk.x, pk.y, pk.w, pk.h);
+        ctx.strokeStyle = "#1e8449"; ctx.lineWidth = 4; ctx.strokeRect(pk.x, pk.y, pk.w, pk.h);
+        ctx.fillStyle = "#ffffff"; ctx.font = "bold 14px Segoe UI"; ctx.textAlign = "center";
+        ctx.fillText(pk.name, pk.x + pk.w / 2, pk.y + 30);
+    });
+
+    // Trees
+    trees.forEach(t => {
+        ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.beginPath(); ctx.arc(t.x + 4, t.y + 4, t.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#1e8449"; ctx.beginPath(); ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#2ecc71"; ctx.beginPath(); ctx.arc(t.x - 3, t.y - 3, t.radius * 0.5, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // Asphalt Roads & Sidewalks
+    ctx.fillStyle = "#7f8c8d";
+    roads.forEach(r => ctx.fillRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16));
+
+    ctx.fillStyle = "#34495e"; 
+    roads.forEach(r => ctx.fillRect(r.x, r.y, r.w, r.h));
+
+    // Road Markings
+    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 2; ctx.setLineDash([12, 12]);
+    ctx.beginPath(); ctx.moveTo(0, 800); ctx.lineTo(MAP_WIDTH, 800); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(1000, 0); ctx.lineTo(1000, MAP_HEIGHT); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Crosswalk Lines
+    ctx.fillStyle = "#ffffff";
+    for(let i = 755; i < 845; i += 12) {
+        ctx.fillRect(930, i, 15, 6);
+        ctx.fillRect(1055, i, 15, 6);
+    }
+    for(let i = 955; i < 1045; i += 12) {
+        ctx.fillRect(i, 730, 6, 15);
+        ctx.fillRect(i, 855, 6, 15);
+    }
+
+    busStops.forEach(bs => drawBusStopShelter(bs));
+    buildings.forEach(b => drawDetailedBuilding(b));
+    drawTrafficLightPoles();
+
+    peds.forEach(p => drawCharacter(ctx, p.x, p.y, p.dir, p.look, true, p.animTimer));
+    cars.forEach(c => drawDetailedCar(c));
+}
+
+function drawGenericShopScene(scene) {
+    ctx.fillStyle = "#f5f6fa"; ctx.fillRect(0, 0, 900, 650);
+    ctx.strokeStyle = "#dcdde1"; ctx.lineWidth = 1;
+    for (let x = 0; x < 900; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 650); ctx.stroke(); }
+    for (let y = 0; y < 650; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(900, y); ctx.stroke(); }
+
+    ctx.fillStyle = "#2f3640"; ctx.fillRect(0, 0, 900, 45);
+    ctx.fillStyle = "#fbc531"; ctx.font = "bold 20px Segoe UI"; ctx.textAlign = "center";
+
+    let title = "";
+    let aisles = [];
+    let items = [];
+
+    if (scene === 'GROCERY') {
+        title = "🥦 FRESH MARKET SUPERSTORE 🍎";
+        aisles = groceryAisles; items = groceryItemsMap;
+    } else if (scene === 'HARDWARE') {
+        title = "🪓 CITY HARDWARE & MATERIALS 🔨";
+        aisles = hardwareAisles; items = hardwareItemsMap;
+    } else if (scene === 'THRIFT') {
+        title = "🧥 THRIFT & VINTAGE SHOP 📻";
+        items = thriftItemsMap;
+    } else if (scene === 'FASTFOOD') {
+        title = "🍔 BURGER TOWN DINER 🍟";
+        items = fastFoodItemsMap;
+    } else if (scene === 'PHARMACY') {
+        title = "💊 CITY CARE PHARMACY 🩹";
+        items = pharmacyItemsMap;
+    } else if (scene === 'WORK') {
+        title = "🏢 METRO OFFICE WORKPLACE 💼";
+        ctx.fillStyle = "#34495e"; ctx.fillRect(350, 180, 200, 100);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 14px Segoe UI";
+        ctx.fillText("MANAGER'S DESK", 450, 230);
+    }
+
+    ctx.fillStyle = "#fbc531"; ctx.font = "bold 20px Segoe UI";
+    ctx.fillText(title, 450, 30);
+
+    aisles.forEach(a => {
+        ctx.fillStyle = "#718093"; ctx.fillRect(a.x, a.y, a.w, a.h);
+        ctx.strokeStyle = "#2f3640"; ctx.lineWidth = 3; ctx.strokeRect(a.x, a.y, a.w, a.h);
+        ctx.fillStyle = "#f5f6fa"; ctx.font = "bold 11px Segoe UI";
+        ctx.fillText(a.label, a.x + a.w / 2, a.y - 8);
+    });
+
+    items.forEach(item => {
+        ctx.fillStyle = "#2ed573"; ctx.fillRect(item.x, item.y, item.w, item.h);
+        ctx.strokeStyle = "#26af5f"; ctx.lineWidth = 2; ctx.strokeRect(item.x, item.y, item.w, item.h);
+        ctx.fillStyle = "#111"; ctx.font = "bold 18px Segoe UI"; ctx.textAlign = "center";
+        ctx.fillText(item.icon, item.x + item.w / 2, item.y + 28);
+        ctx.font = "bold 10px Segoe UI";
+        ctx.fillText(`$${item.price.toFixed(2)}`, item.x + item.w / 2, item.y + 46);
+    });
+
+    ctx.fillStyle = "#e74c3c"; ctx.fillRect(400, 610, 100, 40);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 12px Segoe UI"; ctx.fillText("EXIT DOOR", 450, 634);
+
+    shopNPCs.forEach(s => drawCharacter(ctx, s.x, s.y, s.dir, s.look, true, s.animTimer));
+}
+
+function drawMiniMap() {
+    const mmW = 160, mmH = 120;
+    const mmX = canvas.width - mmW - 15, mmY = 15;
+    const scaleX = mmW / MAP_WIDTH;
+    const scaleY = mmH / MAP_HEIGHT;
+
+    ctx.fillStyle = "rgba(0,0,0,0.75)"; ctx.fillRect(mmX, mmY, mmW, mmH);
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.strokeRect(mmX, mmY, mmW, mmH);
+
+    parks.forEach(pk => {
+        ctx.fillStyle = "#27ae60";
+        ctx.fillRect(mmX + pk.x * scaleX, mmY + pk.y * scaleY, pk.w * scaleX, pk.h * scaleY);
+    });
+
+    buildings.forEach(b => {
+        ctx.fillStyle = b.color;
+        ctx.fillRect(mmX + b.x * scaleX, mmY + b.y * scaleY, b.w * scaleX, b.h * scaleY);
+    });
+
+    ctx.fillStyle = "#00ffff";
+    ctx.beginPath();
+    ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 3, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function loop() {
+    update();
+    draw();
+    if (gameRunning) requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
