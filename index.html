@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poverty Madness</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body {
             margin: 0;
             padding: 0;
-            background-color: #111;
-            color: #fff;
-            font-family: 'Segoe UI', sans-serif;
+            background:
+                radial-gradient(circle at 20% 15%, rgba(46,213,115,0.08), transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(85,239,196,0.06), transparent 40%),
+                #0b0c0e;
+            color: #f4f4f4;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -21,24 +27,42 @@
         }
         #ui-bar {
             width: 900px;
-            background: #222;
-            padding: 12px 20px;
-            border-radius: 8px 8px 0 0;
+            background: linear-gradient(180deg, #23262b 0%, #1a1c20 100%);
+            padding: 14px 24px;
+            border-radius: 14px 14px 0 0;
             display: flex;
             justify-content: space-between;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-bottom: 2px solid #444;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid rgba(46,213,115,0.35);
+            letter-spacing: 0.2px;
         }
+        #ui-bar > div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #ui-bar > div::before {
+            font-size: 1.1rem;
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+        }
+        #ui-bar > div:nth-child(1)::before { content: "📅"; }
+        #ui-bar > div:nth-child(2)::before { content: "💰"; }
+        #ui-bar > div:nth-child(3)::before { content: "❤️"; }
+        #ui-bar > div:nth-child(4)::before { content: "🙂"; }
         .hidden { display: none !important; }
         #canvas-wrapper {
             position: relative;
             width: 900px;
             height: 650px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.04) inset;
         }
         canvas {
             background: #233521;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
             display: block;
         }
         #start-screen {
@@ -47,124 +71,147 @@
             left: 0;
             width: 900px;
             height: 650px;
-            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
             padding-bottom: 40px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
         }
         #start-canvas {
             position: absolute;
             top: 0;
             left: 0;
-            border-radius: 8px;
             z-index: 1;
         }
         #start-btn {
             position: relative;
             z-index: 2;
-            background-color: #ff4d4d;
+            background: linear-gradient(180deg, #ff5c5c 0%, #e63946 100%);
             color: white;
-            border: 3px solid #ffffff;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            border: none;
+            outline: 3px solid rgba(255,255,255,0.85);
+            outline-offset: -3px;
             font-size: 1.5rem;
-            font-weight: bold;
-            padding: 15px 45px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 15px 48px;
             border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.55), 0 2px 0 rgba(255,255,255,0.2) inset;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+            animation: startPulse 2.2s ease-in-out infinite;
         }
         #start-btn:hover {
-            background-color: #ff3333;
-            transform: scale(1.05);
+            background: linear-gradient(180deg, #ff6b6b 0%, #ff3333 100%);
+            transform: scale(1.06);
+            box-shadow: 0 8px 26px rgba(255, 51, 51, 0.65), 0 2px 0 rgba(255,255,255,0.25) inset;
+            animation-play-state: paused;
+        }
+        @keyframes startPulse {
+            0%, 100% { box-shadow: 0 6px 20px rgba(230, 57, 70, 0.55), 0 2px 0 rgba(255,255,255,0.2) inset; }
+            50% { box-shadow: 0 6px 28px rgba(230, 57, 70, 0.85), 0 2px 0 rgba(255,255,255,0.2) inset; }
         }
         #inventory-bar {
             width: 900px;
-            background: #1e1e1e;
-            border: 2px solid #444;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            padding: 10px;
+            background: linear-gradient(180deg, #1c1e22 0%, #16171a 100%);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-top: 1px solid rgba(85,239,196,0.25);
+            border-radius: 0 0 14px 14px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+            box-shadow: 0 14px 30px rgba(0,0,0,0.5);
         }
         .inv-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #aaa;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #8f9aa3;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.4px;
             margin-right: 5px;
         }
         .inv-slots {
             display: flex;
-            gap: 8px;
+            gap: 9px;
             flex-grow: 1;
         }
         .inv-slot {
-            width: 50px;
-            height: 50px;
-            background: #2a2a2a;
-            border: 2px solid #555;
-            border-radius: 6px;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(160deg, #2d3036 0%, #202226 100%);
+            border: 2px solid #3d4046;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             position: relative;
             cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.3);
+            transition: border-color 0.2s, background 0.2s, transform 0.12s, box-shadow 0.2s;
         }
         .inv-slot:hover {
             border-color: #2ed573;
-            background: #333;
+            background: linear-gradient(160deg, #333a36 0%, #262c28 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46,213,115,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .inv-slot .count {
             position: absolute;
             bottom: 2px;
             right: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
+            font-size: 0.72rem;
+            font-weight: 800;
             color: #fff;
             text-shadow: 1px 1px 2px #000;
+            background: rgba(0,0,0,0.55);
+            padding: 0 4px;
+            border-radius: 6px;
         }
         #instructions {
-            margin-top: 10px;
-            color: #aaa;
-            font-size: 0.9rem;
+            margin-top: 12px;
+            color: #8f9aa3;
+            font-size: 0.88rem;
             text-align: center;
         }
+        #instructions strong { color: #55efc4; }
         .modal {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(18, 18, 18, 0.95);
-            border: 2px solid #2ed573;
-            padding: 25px;
-            border-radius: 12px;
+            background: rgba(20, 22, 24, 0.92);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(46,213,115,0.5);
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 20px 50px rgba(0,0,0,0.6);
+            padding: 26px;
+            border-radius: 16px;
             text-align: center;
             display: none;
             width: 440px;
             z-index: 10;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
         }
+        .modal h2 { font-weight: 800; letter-spacing: 0.4px; }
         .modal button.close-btn {
-            background: #ff4d4d;
+            background: linear-gradient(180deg, #ff5c5c 0%, #e63946 100%);
             border: none;
             color: white;
-            padding: 8px 22px;
+            padding: 9px 24px;
             font-size: 0.95rem;
             cursor: pointer;
             margin-top: 18px;
-            border-radius: 20px;
-            font-weight: bold;
+            border-radius: 22px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 14px rgba(230,57,70,0.45);
+            transition: transform 0.12s ease;
         }
-        #inventory-modal { border-color: #55efc4; }
+        .modal button.close-btn:hover { transform: scale(1.05); }
+        #inventory-modal { border-color: rgba(85,239,196,0.55); }
         .inv-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -175,31 +222,33 @@
             padding: 5px;
         }
         .inv-card {
-            background: #2a2a2a;
-            border: 2px solid #444;
-            border-radius: 8px;
+            background: linear-gradient(160deg, #2c2f34 0%, #202226 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
             padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
         }
-        .inv-card .icon { font-size: 2rem; }
-        .inv-card .name { font-size: 0.8rem; font-weight: bold; margin: 4px 0; }
-        .inv-card .qty { font-size: 0.75rem; color: #aaa; }
+        .inv-card .icon { font-size: 2rem; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+        .inv-card .name { font-size: 0.8rem; font-weight: 700; margin: 4px 0; }
+        .inv-card .qty { font-size: 0.75rem; color: #9aa4ab; }
         .inv-card button {
-            background: #2ed573;
+            background: linear-gradient(180deg, #38e888 0%, #2ed573 100%);
             border: none;
-            color: #111;
-            font-weight: bold;
+            color: #0e1410;
+            font-weight: 800;
             font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 5px 8px;
+            border-radius: 6px;
             cursor: pointer;
             margin-top: 6px;
             width: 100%;
+            transition: transform 0.1s ease;
         }
-        .inv-card button:hover { background: #26af5f; }
+        .inv-card button:hover { background: linear-gradient(180deg, #2ed573 0%, #26af5f 100%); transform: translateY(-1px); }
     </style>
 </head>
 <body>
@@ -314,6 +363,68 @@ drawTitleArt();
 // --- GAME LOGIC ---
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = true;
+
+// --- Pre-rendered tile textures (built once, tiled via canvas patterns for a crisp, non-flickering look) ---
+function makeTexture(size, painter) {
+    const t = document.createElement('canvas');
+    t.width = size; t.height = size;
+    painter(t.getContext('2d'), size);
+    return ctx.createPattern(t, 'repeat');
+}
+
+const grassPattern = makeTexture(64, (tctx, s) => {
+    const grad = tctx.createLinearGradient(0, 0, 0, s);
+    grad.addColorStop(0, "#2a4030");
+    grad.addColorStop(1, "#213526");
+    tctx.fillStyle = grad;
+    tctx.fillRect(0, 0, s, s);
+    tctx.strokeStyle = "rgba(255,255,255,0.04)";
+    tctx.lineWidth = 1.5;
+    for (let i = 0; i < 26; i++) {
+        const gx = (i * 17) % s, gy = (i * 29 + 5) % s;
+        tctx.beginPath(); tctx.moveTo(gx, gy); tctx.lineTo(gx + 1, gy - 5); tctx.stroke();
+    }
+    tctx.fillStyle = "rgba(0,0,0,0.07)";
+    for (let i = 0; i < 18; i++) {
+        const gx = (i * 23 + 9) % s, gy = (i * 13 + 3) % s;
+        tctx.beginPath(); tctx.arc(gx, gy, 1.6, 0, Math.PI * 2); tctx.fill();
+    }
+});
+
+const asphaltPattern = makeTexture(48, (tctx, s) => {
+    tctx.fillStyle = "#33404a";
+    tctx.fillRect(0, 0, s, s);
+    tctx.fillStyle = "rgba(255,255,255,0.025)";
+    for (let i = 0; i < 22; i++) {
+        const gx = (i * 19 + 4) % s, gy = (i * 11 + 8) % s;
+        tctx.fillRect(gx, gy, 2, 2);
+    }
+    tctx.fillStyle = "rgba(0,0,0,0.05)";
+    for (let i = 0; i < 16; i++) {
+        const gx = (i * 13 + 2) % s, gy = (i * 27 + 6) % s;
+        tctx.fillRect(gx, gy, 1.5, 1.5);
+    }
+});
+
+const sidewalkPattern = makeTexture(40, (tctx, s) => {
+    tctx.fillStyle = "#9fabb0";
+    tctx.fillRect(0, 0, s, s);
+    tctx.strokeStyle = "rgba(0,0,0,0.12)";
+    tctx.lineWidth = 2;
+    tctx.strokeRect(0, 0, s, s);
+});
+
+const shopFloorPattern = makeTexture(80, (tctx, s) => {
+    tctx.fillStyle = "#f2f4f8";
+    tctx.fillRect(0, 0, s, s);
+    tctx.strokeStyle = "#dde1e8";
+    tctx.lineWidth = 2;
+    tctx.strokeRect(0, 0, s, s);
+    tctx.fillStyle = "rgba(0,0,0,0.015)";
+    tctx.fillRect(0, 0, s / 2, s / 2);
+    tctx.fillRect(s / 2, s / 2, s / 2, s / 2);
+});
 
 const MAP_WIDTH = 2000;
 const MAP_HEIGHT = 1600;
@@ -829,6 +940,10 @@ function drawCharacter(c, x, y, dir, customLook = null, isMoving = true, animTim
     c.translate(x, y);
     c.scale(0.55, 0.55);
 
+    // Soft contact shadow for grounding
+    c.fillStyle = "rgba(0,0,0,0.25)";
+    c.beginPath(); c.ellipse(0, 27, 15, 5, 0, 0, Math.PI * 2); c.fill();
+
     const skinColor = customLook ? customLook.skin : "#e59866";
     const shirtColor = customLook ? customLook.shirt : "#b06e37";
     const pantsColor = customLook ? customLook.pants : "#874d22";
@@ -1002,8 +1117,14 @@ function drawDetailedCar(car) {
         ctx.fillRect(car.w/2 - 1, car.h/2 - 15, 3, 9);
     }
 
-    // Main Car Body Shape
-    ctx.fillStyle = car.color;
+    // Main Car Body Shape (glossy gradient)
+    const bodyGrad = isHorizontal
+        ? ctx.createLinearGradient(0, -car.h/2, 0, car.h/2)
+        : ctx.createLinearGradient(-car.w/2, 0, car.w/2, 0);
+    bodyGrad.addColorStop(0, shadeColor(car.color, 35));
+    bodyGrad.addColorStop(0.5, car.color);
+    bodyGrad.addColorStop(1, shadeColor(car.color, -30));
+    ctx.fillStyle = bodyGrad;
     ctx.beginPath();
     ctx.roundRect(-car.w/2, -car.h/2, car.w, car.h, 5);
     ctx.fill();
@@ -1052,28 +1173,67 @@ function drawDetailedBuilding(b) {
     ctx.save();
 
     // Drop Shadow
-    ctx.fillStyle = "rgba(0,0,0,0.3)";
-    ctx.fillRect(b.x + 8, b.y + 8, b.w, b.h);
+    ctx.fillStyle = "rgba(0,0,0,0.32)";
+    ctx.fillRect(b.x + 10, b.y + 10, b.w, b.h);
 
-    // Main Wall
-    ctx.fillStyle = b.color;
+    // Main Wall (gradient for depth)
+    const wallGrad = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+    wallGrad.addColorStop(0, shadeColor(b.color, 18));
+    wallGrad.addColorStop(1, shadeColor(b.color, -12));
+    ctx.fillStyle = wallGrad;
     ctx.fillRect(b.x, b.y, b.w, b.h);
+
+    // Window grid
+    const winRows = 2, winCols = Math.max(3, Math.floor(b.w / 55));
+    const winMarginX = 22, winMarginTop = 60, winMarginBottom = 30;
+    const availW = b.w - winMarginX * 2;
+    const winW = Math.min(28, (availW - (winCols - 1) * 12) / winCols);
+    const gapX = (availW - winCols * winW) / (winCols - 1 || 1);
+    const winH = 22;
+    for (let r = 0; r < winRows; r++) {
+        for (let c = 0; c < winCols; c++) {
+            const wx = b.x + winMarginX + c * (winW + gapX);
+            const wy = b.y + winMarginTop + r * (winH + 16);
+            if (wy + winH > b.y + b.h - winMarginBottom) continue;
+            const winGrad = ctx.createLinearGradient(wx, wy, wx, wy + winH);
+            winGrad.addColorStop(0, "#bfe6f7");
+            winGrad.addColorStop(1, "#6fb8d8");
+            ctx.fillStyle = winGrad;
+            ctx.fillRect(wx, wy, winW, winH);
+            ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1.5;
+            ctx.strokeRect(wx, wy, winW, winH);
+            ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(wx + 2, wy + winH - 2); ctx.lineTo(wx + winW - 2, wy + 2); ctx.stroke();
+        }
+    }
 
     // Roof border / Trim
     ctx.strokeStyle = b.trim;
     ctx.lineWidth = 6;
     ctx.strokeRect(b.x, b.y, b.w, b.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(b.x + 4, b.y + 4, b.w - 8, b.h - 8);
 
-    // Architectural Roof Accent lines
-    ctx.fillStyle = "rgba(0,0,0,0.15)";
-    ctx.fillRect(b.x + 10, b.y + 10, b.w - 20, b.h - 20);
+    // Awning over the entrance
+    ctx.fillStyle = b.trim;
+    ctx.beginPath();
+    ctx.moveTo(b.x + b.w/2 - 34, b.y + b.h - 26);
+    ctx.lineTo(b.x + b.w/2 + 34, b.y + b.h - 26);
+    ctx.lineTo(b.x + b.w/2 + 28, b.y + b.h - 18);
+    ctx.lineTo(b.x + b.w/2 - 28, b.y + b.h - 18);
+    ctx.closePath(); ctx.fill();
 
     // Store Entrance / Doors
-    ctx.fillStyle = "#2c3e50";
+    ctx.fillStyle = "#1e272e";
     ctx.fillRect(b.x + b.w/2 - 25, b.y + b.h - 18, 50, 18);
-    ctx.fillStyle = "#87ceeb"; // Glass doors
+    const doorGrad = ctx.createLinearGradient(0, b.y + b.h - 15, 0, b.y + b.h);
+    doorGrad.addColorStop(0, "#a9dcef"); doorGrad.addColorStop(1, "#6fb8d8");
+    ctx.fillStyle = doorGrad; // Glass doors
     ctx.fillRect(b.x + b.w/2 - 22, b.y + b.h - 15, 20, 15);
     ctx.fillRect(b.x + b.w/2 + 2, b.y + b.h - 15, 20, 15);
+    ctx.strokeStyle = "#1e272e"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(b.x + b.w/2 - 1.5, b.y + b.h - 18, 3, 18);
 
     // Store Front Signboard Box
     ctx.fillStyle = "#1e272e";
@@ -1084,11 +1244,19 @@ function drawDetailedBuilding(b) {
 
     // Text Label
     ctx.fillStyle = "#ffffff";
-    ctx.font = "900 13px 'Segoe UI', sans-serif";
+    ctx.font = "900 13px 'Poppins', 'Segoe UI', sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(b.name.toUpperCase(), b.x + b.w / 2, b.y + 38);
 
     ctx.restore();
+}
+
+// Lightens (positive amt) or darkens (negative amt) a #rrggbb color for gradient shading
+function shadeColor(hex, amt) {
+    const num = parseInt(hex.slice(1), 16);
+    let r = (num >> 16) + amt, g = ((num >> 8) & 0xff) + amt, b = (num & 0xff) + amt;
+    r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+    return `rgb(${r}, ${g}, ${b})`;
 }
 
 function drawBusStopShelter(bs) {
@@ -1183,39 +1351,70 @@ function draw() {
 }
 
 function drawCityScene() {
-    // Grass Ground
-    ctx.fillStyle = "#233521"; ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+    // Grass Ground (tiled texture instead of flat fill)
+    ctx.fillStyle = grassPattern; ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
     // Parks
     parks.forEach(pk => {
-        ctx.fillStyle = "#27ae60"; ctx.fillRect(pk.x, pk.y, pk.w, pk.h);
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.18)"; ctx.fillRect(pk.x + 5, pk.y + 5, pk.w, pk.h);
+        const pkGrad = ctx.createLinearGradient(pk.x, pk.y, pk.x, pk.y + pk.h);
+        pkGrad.addColorStop(0, "#33c17a"); pkGrad.addColorStop(1, "#219a58");
+        ctx.fillStyle = pkGrad; ctx.fillRect(pk.x, pk.y, pk.w, pk.h);
         ctx.strokeStyle = "#1e8449"; ctx.lineWidth = 4; ctx.strokeRect(pk.x, pk.y, pk.w, pk.h);
-        ctx.fillStyle = "#ffffff"; ctx.font = "bold 14px Segoe UI"; ctx.textAlign = "center";
-        ctx.fillText(pk.name, pk.x + pk.w / 2, pk.y + 30);
+        ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 1.5;
+        ctx.strokeRect(pk.x + 4, pk.y + 4, pk.w - 8, pk.h - 8);
+        // scattered flowers for texture
+        const flowerColors = ["#ffeaa7", "#ff7675", "#74b9ff", "#ffffff"];
+        for (let i = 0; i < 14; i++) {
+            const fx = pk.x + 15 + (i * 37) % (pk.w - 30);
+            const fy = pk.y + 15 + (i * 53) % (pk.h - 30);
+            ctx.fillStyle = flowerColors[i % flowerColors.length];
+            ctx.beginPath(); ctx.arc(fx, fy, 2.4, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.font = "900 15px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+        ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,0.45)";
+        ctx.strokeText(pk.name, pk.x + pk.w / 2, pk.y + 30);
+        ctx.fillStyle = "#ffffff"; ctx.fillText(pk.name, pk.x + pk.w / 2, pk.y + 30);
+        ctx.restore();
     });
 
     // Trees
     trees.forEach(t => {
-        ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.beginPath(); ctx.arc(t.x + 4, t.y + 4, t.radius, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#1e8449"; ctx.beginPath(); ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#2ecc71"; ctx.beginPath(); ctx.arc(t.x - 3, t.y - 3, t.radius * 0.5, 0, Math.PI * 2); ctx.fill();
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.beginPath(); ctx.ellipse(t.x + 5, t.y + 6, t.radius * 0.95, t.radius * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#6b4423"; ctx.fillRect(t.x - 3, t.y + t.radius * 0.4, 6, 10);
+        const canopyGrad = ctx.createRadialGradient(t.x - t.radius * 0.35, t.y - t.radius * 0.35, t.radius * 0.15, t.x, t.y, t.radius);
+        canopyGrad.addColorStop(0, "#4fd087");
+        canopyGrad.addColorStop(0.55, "#219653");
+        canopyGrad.addColorStop(1, "#166a3a");
+        ctx.fillStyle = canopyGrad;
+        ctx.beginPath(); ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(0,0,0,0.15)"; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
+        ctx.beginPath(); ctx.arc(t.x - t.radius * 0.35, t.y - t.radius * 0.4, t.radius * 0.32, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
     });
 
-    // Asphalt Roads & Sidewalks
-    ctx.fillStyle = "#7f8c8d";
-    roads.forEach(r => ctx.fillRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16));
+    // Sidewalks & Asphalt Roads (textured)
+    ctx.fillStyle = sidewalkPattern;
+    roads.forEach(r => ctx.fillRect(r.x - 10, r.y - 10, r.w + 20, r.h + 20));
 
-    ctx.fillStyle = "#34495e"; 
+    ctx.fillStyle = asphaltPattern;
     roads.forEach(r => ctx.fillRect(r.x, r.y, r.w, r.h));
 
+    // subtle road edge shading
+    ctx.strokeStyle = "rgba(255,255,255,0.06)"; ctx.lineWidth = 2;
+    roads.forEach(r => ctx.strokeRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4));
+
     // Road Markings
-    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 2; ctx.setLineDash([12, 12]);
+    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 3; ctx.setLineDash([16, 14]);
     ctx.beginPath(); ctx.moveTo(0, 800); ctx.lineTo(MAP_WIDTH, 800); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(1000, 0); ctx.lineTo(1000, MAP_HEIGHT); ctx.stroke();
     ctx.setLineDash([]);
 
     // Crosswalk Lines
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#f5f6fa";
     for(let i = 755; i < 845; i += 12) {
         ctx.fillRect(930, i, 15, 6);
         ctx.fillRect(1055, i, 15, 6);
@@ -1234,13 +1433,14 @@ function drawCityScene() {
 }
 
 function drawGenericShopScene(scene) {
-    ctx.fillStyle = "#f5f6fa"; ctx.fillRect(0, 0, 900, 650);
-    ctx.strokeStyle = "#dcdde1"; ctx.lineWidth = 1;
-    for (let x = 0; x < 900; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 650); ctx.stroke(); }
-    for (let y = 0; y < 650; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(900, y); ctx.stroke(); }
+    ctx.fillStyle = shopFloorPattern; ctx.fillRect(0, 0, 900, 650);
 
-    ctx.fillStyle = "#2f3640"; ctx.fillRect(0, 0, 900, 45);
-    ctx.fillStyle = "#fbc531"; ctx.font = "bold 20px Segoe UI"; ctx.textAlign = "center";
+    const headerGrad = ctx.createLinearGradient(0, 0, 0, 45);
+    headerGrad.addColorStop(0, "#3a4250"); headerGrad.addColorStop(1, "#262c36");
+    ctx.fillStyle = headerGrad; ctx.fillRect(0, 0, 900, 45);
+    ctx.strokeStyle = "rgba(251,197,49,0.5)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, 45); ctx.lineTo(900, 45); ctx.stroke();
+    ctx.fillStyle = "#fbc531"; ctx.font = "bold 20px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
 
     let title = "";
     let aisles = [];
@@ -1268,27 +1468,47 @@ function drawGenericShopScene(scene) {
         ctx.fillText("MANAGER'S DESK", 450, 230);
     }
 
-    ctx.fillStyle = "#fbc531"; ctx.font = "bold 20px Segoe UI";
+    ctx.fillStyle = "#fbc531"; ctx.font = "bold 20px 'Poppins', 'Segoe UI', sans-serif";
     ctx.fillText(title, 450, 30);
 
     aisles.forEach(a => {
-        ctx.fillStyle = "#718093"; ctx.fillRect(a.x, a.y, a.w, a.h);
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.12)"; ctx.fillRect(a.x + 4, a.y + 4, a.w, a.h);
+        const aisleGrad = ctx.createLinearGradient(a.x, a.y, a.x + a.w, a.y);
+        aisleGrad.addColorStop(0, "#828d9c"); aisleGrad.addColorStop(0.5, "#6b7583"); aisleGrad.addColorStop(1, "#828d9c");
+        ctx.fillStyle = aisleGrad; ctx.fillRect(a.x, a.y, a.w, a.h);
         ctx.strokeStyle = "#2f3640"; ctx.lineWidth = 3; ctx.strokeRect(a.x, a.y, a.w, a.h);
-        ctx.fillStyle = "#f5f6fa"; ctx.font = "bold 11px Segoe UI";
+        ctx.fillStyle = "#2f3640"; ctx.font = "bold 11px 'Poppins', 'Segoe UI', sans-serif";
+        ctx.fillText(a.label, a.x + a.w / 2 + 1, a.y - 7);
+        ctx.fillStyle = "#f5f6fa";
         ctx.fillText(a.label, a.x + a.w / 2, a.y - 8);
+        ctx.restore();
     });
 
     items.forEach(item => {
-        ctx.fillStyle = "#2ed573"; ctx.fillRect(item.x, item.y, item.w, item.h);
-        ctx.strokeStyle = "#26af5f"; ctx.lineWidth = 2; ctx.strokeRect(item.x, item.y, item.w, item.h);
-        ctx.fillStyle = "#111"; ctx.font = "bold 18px Segoe UI"; ctx.textAlign = "center";
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.12)"; ctx.fillRect(item.x + 3, item.y + 3, item.w, item.h);
+        const itemGrad = ctx.createLinearGradient(item.x, item.y, item.x, item.y + item.h);
+        itemGrad.addColorStop(0, "#3ee98b"); itemGrad.addColorStop(1, "#26af5f");
+        ctx.fillStyle = itemGrad;
+        ctx.beginPath(); ctx.roundRect(item.x, item.y, item.w, item.h, 6); ctx.fill();
+        ctx.strokeStyle = "#1c8a49"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = "#0d1a11"; ctx.font = "bold 18px 'Segoe UI', sans-serif"; ctx.textAlign = "center";
         ctx.fillText(item.icon, item.x + item.w / 2, item.y + 28);
-        ctx.font = "bold 10px Segoe UI";
+        ctx.font = "800 10px 'Poppins', 'Segoe UI', sans-serif";
         ctx.fillText(`$${item.price.toFixed(2)}`, item.x + item.w / 2, item.y + 46);
+        ctx.restore();
     });
 
-    ctx.fillStyle = "#e74c3c"; ctx.fillRect(400, 610, 100, 40);
-    ctx.fillStyle = "#fff"; ctx.font = "bold 12px Segoe UI"; ctx.fillText("EXIT DOOR", 450, 634);
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(403, 613, 100, 40);
+    const exitGrad = ctx.createLinearGradient(0, 610, 0, 650);
+    exitGrad.addColorStop(0, "#ff6b6b"); exitGrad.addColorStop(1, "#d63031");
+    ctx.fillStyle = exitGrad;
+    ctx.beginPath(); ctx.roundRect(400, 610, 100, 40, 6); ctx.fill();
+    ctx.strokeStyle = "#a92a2a"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "800 12px 'Poppins', 'Segoe UI', sans-serif"; ctx.fillText("EXIT DOOR", 450, 634);
+    ctx.restore();
 
     shopNPCs.forEach(s => drawCharacter(ctx, s.x, s.y, s.dir, s.look, true, s.animTimer));
 }
@@ -1298,24 +1518,41 @@ function drawMiniMap() {
     const mmX = canvas.width - mmW - 15, mmY = 15;
     const scaleX = mmW / MAP_WIDTH;
     const scaleY = mmH / MAP_HEIGHT;
+    const radius = 10;
 
-    ctx.fillStyle = "rgba(0,0,0,0.75)"; ctx.fillRect(mmX, mmY, mmW, mmH);
-    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.strokeRect(mmX, mmY, mmW, mmH);
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
+    ctx.beginPath(); ctx.roundRect(mmX, mmY, mmW, mmH, radius);
+    ctx.fillStyle = "rgba(10,12,14,0.82)"; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(mmX, mmY, mmW, mmH, radius); ctx.clip();
 
     parks.forEach(pk => {
         ctx.fillStyle = "#27ae60";
         ctx.fillRect(mmX + pk.x * scaleX, mmY + pk.y * scaleY, pk.w * scaleX, pk.h * scaleY);
     });
 
+    ctx.fillStyle = "rgba(160,171,176,0.65)";
+    roads.forEach(r => ctx.fillRect(mmX + r.x * scaleX, mmY + r.y * scaleY, r.w * scaleX, r.h * scaleY));
+
     buildings.forEach(b => {
         ctx.fillStyle = b.color;
         ctx.fillRect(mmX + b.x * scaleX, mmY + b.y * scaleY, b.w * scaleX, b.h * scaleY);
     });
 
+    ctx.fillStyle = "rgba(0,255,255,0.25)";
+    ctx.beginPath(); ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 6, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#00ffff";
     ctx.beginPath();
     ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 3, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+
+    ctx.beginPath(); ctx.roundRect(mmX, mmY, mmW, mmH, radius);
+    ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 2; ctx.stroke();
 }
 
 function loop() {
