@@ -28,12 +28,12 @@
         #ui-bar {
             width: 900px;
             background: linear-gradient(180deg, #23262b 0%, #1a1c20 100%);
-            padding: 14px 24px;
+            padding: 14px 18px;
             border-radius: 14px 14px 0 0;
             display: flex;
             justify-content: space-between;
             font-family: 'Poppins', 'Segoe UI', sans-serif;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 700;
             border: 1px solid rgba(255,255,255,0.07);
             border-bottom: 1px solid rgba(46,213,115,0.35);
@@ -48,10 +48,11 @@
             font-size: 1.1rem;
             filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
         }
-        #ui-bar > div:nth-child(1)::before { content: "📅"; }
-        #ui-bar > div:nth-child(2)::before { content: "💰"; }
-        #ui-bar > div:nth-child(3)::before { content: "❤️"; }
-        #ui-bar > div:nth-child(4)::before { content: "🙂"; }
+        #ui-bar > div:nth-child(1)::before { content: "🕒"; }
+        #ui-bar > div:nth-child(2)::before { content: "📅"; }
+        #ui-bar > div:nth-child(3)::before { content: "💰"; }
+        #ui-bar > div:nth-child(4)::before { content: "❤️"; }
+        #ui-bar > div:nth-child(5)::before { content: "🙂"; }
         .hidden { display: none !important; }
         #canvas-wrapper {
             position: relative;
@@ -249,11 +250,87 @@
             transition: transform 0.1s ease;
         }
         .inv-card button:hover { background: linear-gradient(180deg, #2ed573 0%, #26af5f 100%); transform: translateY(-1px); }
+
+        .craft-section {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(255,255,255,0.15);
+            text-align: left;
+        }
+        .craft-card { grid-column: 1 / -1; }
+        .craft-reqs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin: 6px 0 8px;
+        }
+        .craft-req {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.06);
+            color: #d9534f;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .craft-req-ok { color: #2ed573; border-color: rgba(46,213,115,0.4); background: rgba(46,213,115,0.08); }
+        #craft-stand-btn:disabled {
+            background: #4a4d52 !important;
+            color: #8f9aa3;
+            cursor: not-allowed;
+        }
+
+        .stand-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        .stand-empty { color: #8f9aa3; font-size: 0.78rem; padding: 10px 2px; }
+        .stand-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(160deg, #2c2f34 0%, #202226 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 6px 8px;
+        }
+        .stand-row-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .stand-row-name { font-size: 0.72rem; font-weight: 600; flex-grow: 1; line-height: 1.3; }
+        .stand-row-sub { font-size: 0.65rem; color: #9aa4ab; font-weight: 500; }
+        .stand-price-input {
+            width: 52px;
+            background: #16171a;
+            border: 1px solid #3d4046;
+            color: #f4f4f4;
+            border-radius: 5px;
+            padding: 3px 4px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+        .stand-btn {
+            border: none;
+            font-weight: 800;
+            font-size: 0.68rem;
+            padding: 6px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform 0.1s ease;
+        }
+        .stand-btn:hover { transform: translateY(-1px); }
+        .stand-btn-stock { background: linear-gradient(180deg, #38e888 0%, #2ed573 100%); color: #0e1410; }
+        .stand-btn-take { background: linear-gradient(180deg, #74b9ff 0%, #4d94e0 100%); color: #0e1410; }
     </style>
 </head>
 <body>
 
 <div id="ui-bar" class="hidden">
+    <div>Time: <span id="ui-time">8:00 AM</span></div>
     <div>Day: <span id="ui-day">1</span>/7</div>
     <div>Money: $<span id="ui-money">150.00</span></div>
     <div>HP: <span id="ui-hp">70</span>/100</div>
@@ -271,7 +348,27 @@
     <div id="inventory-modal" class="modal">
         <h2 style="margin-top:0; color:#55efc4;">Backpack Inventory</h2>
         <div id="inv-modal-grid" class="inv-grid"></div>
+        <div class="craft-section">
+            <div class="inv-title" style="margin:0 0 8px;">Crafting</div>
+            <div id="craft-grid" class="inv-grid" style="grid-template-columns: 1fr;"></div>
+        </div>
         <button class="close-btn" onclick="toggleInventoryModal(false)">Close (E or ESC)</button>
+    </div>
+
+    <div id="stand-modal" class="modal" style="border-color: rgba(241,196,49,0.6); width: 500px;">
+        <h2 style="margin-top:0; color:#f1c40f;">🏪 Manage Market Stand</h2>
+        <p style="color:#8f9aa3; font-size:0.8rem; margin-top:-8px;">Set your own price, stock it from your backpack, and shoppers passing by will buy!</p>
+        <div style="display:flex; gap:14px; text-align:left;">
+            <div style="flex:1; min-width:0;">
+                <div class="inv-title" style="margin:0 0 6px;">Backpack</div>
+                <div id="stand-backpack-list" class="stand-list"></div>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div class="inv-title" style="margin:0 0 6px;">On The Stand</div>
+                <div id="stand-stock-list" class="stand-list"></div>
+            </div>
+        </div>
+        <button class="close-btn" onclick="closeStandModal()">Close (E or ESC)</button>
     </div>
 
     <div id="game-over-modal" class="modal" style="border-color: #ff4d4d;">
@@ -287,7 +384,7 @@
 </div>
 
 <div id="instructions" class="hidden">
-    <strong>Controls:</strong> WASD / Arrow Keys to Move. Press <strong>E</strong> to interact / enter shops / chop trees / open inventory.
+    <strong>Controls:</strong> WASD / Arrow Keys to Move. Press <strong>E</strong> to interact / enter shops / chop trees / open inventory / place &amp; manage your market stand.
 </div>
 
 <script>
@@ -426,15 +523,35 @@ const shopFloorPattern = makeTexture(80, (tctx, s) => {
     tctx.fillRect(s / 2, s / 2, s / 2, s / 2);
 });
 
-const MAP_WIDTH = 2000;
+const MAP_WIDTH = 2550;
 const MAP_HEIGHT = 1600;
+const MAP_MIN_X = -1050;
+const RIVER_X1 = -110, RIVER_X2 = 110;
+const RIVER_BAND = 26;
+function blockedByRiver(x, y) {
+    if (x > RIVER_X1 - RIVER_BAND && x < RIVER_X2 + RIVER_BAND) {
+        if (y < 745 || y > 855) return true;
+    }
+    return false;
+}
 
 let day = 1, money = 150.0, hp = 70, happy = 70;
+let gameMinutes = 8 * 60; // in-game clock, starts at 8:00 AM
+let clockInterval = null;
 let workedToday = false, gameOver = false, gameRunning = false;
 let currentScene = 'CITY';
 let inventoryOpen = false;
+let standModalOpen = false;
 
 const inventory = [];
+const playerStands = [];
+let placingStandItemId = null;
+let activeStandId = null;
+let standSaleTimer = 250;
+let drivingCar = null;
+const FUEL_MAX = 160;
+
+const STAND_RECIPE = { need: [{ id: 'axe', name: 'Woodcutter Axe', icon: '🪓', qty: 1, consume: false }, { id: 'wood', name: 'Wood Log', icon: '🪵', qty: 3, consume: true }] };
 
 const player = { 
     x: 1000, 
@@ -467,11 +584,23 @@ function getRandomAppearance() {
 
 const buildings = [
     { name: "Grocery Store", type: "STORE", x: 200, y: 180, w: 240, h: 160, color: "#27ae60", trim: "#1e8449", action: () => enterShop('GROCERY'), text: "Enter Grocery Store" },
-    { name: "Hardware Store", type: "HARDWARE", x: 900, y: 180, w: 240, h: 160, color: "#d35400", trim: "#a04000", action: () => enterShop('HARDWARE'), text: "Enter Hardware Store" },
     { name: "Thrift Store", type: "THRIFT", x: 1500, y: 180, w: 240, h: 160, color: "#e67e22", trim: "#b9590e", action: () => enterShop('THRIFT'), text: "Enter Thrift Shop" },
     { name: "Fast Food", type: "DINER", x: 1500, y: 1080, w: 240, h: 160, color: "#ff4757", trim: "#d63031", action: () => enterShop('FASTFOOD'), text: "Enter Fast Food Diner" },
     { name: "Workplace", type: "OFFICE", x: 200, y: 1080, w: 240, h: 160, color: "#1e90ff", trim: "#0984e3", action: () => enterShop('WORK'), text: "Enter Workplace Office" },
-    { name: "Pharmacy", type: "PHARMACY", x: 680, y: 1080, w: 240, h: 160, color: "#a55eea", trim: "#8e44ad", action: () => enterShop('PHARMACY'), text: "Enter Pharmacy" }
+    { name: "Pharmacy", type: "PHARMACY", x: 680, y: 1080, w: 240, h: 160, color: "#a55eea", trim: "#8e44ad", action: () => enterShop('PHARMACY'), text: "Enter Pharmacy" },
+    // --- Outskirts chunk (west of the main city, x < 0) ---
+    { name: "Hardware Store", type: "HARDWARE", x: -560, y: 180, w: 240, h: 160, color: "#d35400", trim: "#a04000", action: () => enterShop('HARDWARE'), text: "Enter Hardware Store" },
+    { name: "Sam's Autocars", type: "DEALERSHIP", x: -560, y: 1080, w: 280, h: 170, color: "#4b6584", trim: "#2f3640", action: () => enterShop('DEALERSHIP'), text: "Enter Sam's Autocars" }
+];
+
+// --- Maple Heights neighborhood (east side of the map, past a turn off the main road) ---
+const houses = [
+    { x: 2000, y: 880, w: 130, h: 110, roof: "#c0392b", wall: "#f5deb3", door: "#6b4423" },
+    { x: 2000, y: 1060, w: 130, h: 110, roof: "#2980b9", wall: "#fdf6e3", door: "#5c3a21" },
+    { x: 2000, y: 1240, w: 130, h: 110, roof: "#27ae60", wall: "#f0e6d2", door: "#6b4423" },
+    { x: 2280, y: 880, w: 130, h: 110, roof: "#e67e22", wall: "#f5deb3", door: "#5c3a21" },
+    { x: 2280, y: 1060, w: 130, h: 110, roof: "#8e44ad", wall: "#fdf6e3", door: "#6b4423" },
+    { x: 2280, y: 1240, w: 130, h: 110, roof: "#16a085", wall: "#f0e6d2", door: "#5c3a21" }
 ];
 
 const parks = [
@@ -484,12 +613,79 @@ const busStops = [
     { x: 1070, y: 855, w: 75, h: 50, name: "South Stop" }
 ];
 
+const gasStations = [
+    { x: -300, y: 865, w: 170, h: 115, name: "Outskirts Fuel Stop" },
+    { x: -900, y: 865, w: 170, h: 115, name: "Highway Fuel Stop" },
+    { x: 1560, y: 900, w: 170, h: 115, name: "Eastside Fuel Stop" }
+];
+
+function fillGas() {
+    if (!drivingCar) return;
+    const needed = FUEL_MAX - (drivingCar.fuel || 0);
+    if (needed <= 0.5) return;
+    const costPerUnit = 0.10;
+    const affordableUnits = money / costPerUnit;
+    const unitsToFill = Math.min(needed, affordableUnits);
+    if (unitsToFill <= 0) return;
+    money -= unitsToFill * costPerUnit;
+    drivingCar.fuel = Math.min(FUEL_MAX, (drivingCar.fuel || 0) + unitsToFill);
+    updateUI();
+}
+
+const parkingLots = [
+    {
+        id: 'dealership_lot', name: "Sam's Autocars Lot", x: -560, y: 1270, w: 280, h: 130,
+        spots: [
+            { x: -520, y: 1300, dirX: -1, dirY: 0, occupied: false },
+            { x: -430, y: 1300, dirX: -1, dirY: 0, occupied: false },
+            { x: -340, y: 1300, dirX: -1, dirY: 0, occupied: false },
+            { x: -520, y: 1365, dirX: 1, dirY: 0, occupied: false },
+            { x: -430, y: 1365, dirX: 1, dirY: 0, occupied: false },
+            { x: -340, y: 1365, dirX: 1, dirY: 0, occupied: false }
+        ],
+        cars: []
+    },
+    {
+        id: 'grocery_lot', name: "Public Parking", x: 460, y: 230, w: 170, h: 110,
+        spots: [
+            { x: 500, y: 260, dirX: 1, dirY: 0, occupied: true, color: '#3498db', w: 46, h: 22 },
+            { x: 500, y: 312, dirX: 1, dirY: 0, occupied: true, color: '#f1c40f', w: 46, h: 22 }
+        ],
+        cars: []
+    },
+    {
+        id: 'thrift_lot', name: "Public Parking", x: 1250, y: 230, w: 170, h: 110,
+        spots: [
+            { x: 1290, y: 260, dirX: -1, dirY: 0, occupied: true, color: '#9b59b6', w: 46, h: 22 },
+            { x: 1290, y: 312, dirX: -1, dirY: 0, occupied: true, color: '#e74c3c', w: 46, h: 22 }
+        ],
+        cars: []
+    }
+];
+parkingLots.forEach(lot => {
+    lot.spots.forEach(spot => {
+        if (spot.occupied) {
+            lot.cars.push({ x: spot.x, y: spot.y, w: spot.w || 46, h: spot.h || 22, color: spot.color || '#95a5a6', dirX: spot.dirX, dirY: spot.dirY });
+        }
+    });
+});
+
+function findFreeParkingSpot(lotId) {
+    const lot = parkingLots.find(l => l.id === lotId);
+    if (!lot) return null;
+    return lot.spots.find(s => !s.occupied) || null;
+}
+
 const trees = [];
 function generateTrees() {
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 60; i++) {
+        let tx;
+        do {
+            tx = Math.random() * (MAP_WIDTH - MAP_MIN_X - 100) + MAP_MIN_X + 50;
+        } while (tx > RIVER_X1 - 40 && tx < RIVER_X2 + 40);
         trees.push({
             id: i,
-            x: Math.random() * (MAP_WIDTH - 100) + 50,
+            x: tx,
             y: Math.random() * (MAP_HEIGHT - 100) + 50,
             radius: 18 + Math.random() * 8,
             hp: 3
@@ -545,6 +741,17 @@ const pharmacyItemsMap = [
     { id: 'firstaid', name: "First Aid Kit", icon: "🩹", price: 40.00, hp: 50, happy: 5, type: 'med', x: 550, y: 220, w: 80, h: 60 }
 ];
 
+const dealershipAisles = [
+    { x: 180, y: 150, w: 140, h: 320, label: "Sedans" },
+    { x: 420, y: 150, w: 140, h: 320, label: "SUVs" },
+    { x: 660, y: 150, w: 140, h: 320, label: "Trucks" }
+];
+const dealershipItemsMap = [
+    { id: 'sedan', name: "Compact Sedan", icon: "🚗", price: 120.00, hp: 0, happy: 25, type: 'vehicle', color: '#e74c3c', carW: 46, carH: 22, x: 200, y: 200, w: 100, h: 70 },
+    { id: 'suv', name: "Family SUV", icon: "🚙", price: 180.00, hp: 0, happy: 35, type: 'vehicle', color: '#3498db', carW: 52, carH: 26, x: 440, y: 200, w: 100, h: 70 },
+    { id: 'truck', name: "Pickup Truck", icon: "🛻", price: 240.00, hp: 0, happy: 45, type: 'vehicle', color: '#34495e', carW: 58, carH: 28, x: 680, y: 200, w: 100, h: 70 }
+];
+
 const shopNPCs = [];
 for (let i = 0; i < 6; i++) {
     shopNPCs.push({
@@ -560,17 +767,18 @@ for (let i = 0; i < 6; i++) {
 
 const trafficSignal = { horizontal: 'GREEN', vertical: 'RED', timer: 0 };
 const roads = [
-    { x: 0, y: 750, w: MAP_WIDTH, h: 100 },
-    { x: 950, y: 0, w: 100, h: MAP_HEIGHT }
+    { x: MAP_MIN_X, y: 750, w: MAP_WIDTH - MAP_MIN_X, h: 100 },
+    { x: 950, y: 0, w: 100, h: MAP_HEIGHT },
+    { x: 2150, y: 750, w: 100, h: MAP_HEIGHT - 750 }
 ];
 const cars = [];
 const carColors = ['#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#1abc9c', '#e67e22', '#34495e', '#ecf0f1'];
 
 function spawnCar(lane) {
-    const baseSpeed = 1.2 + Math.random() * 0.8;
+    const baseSpeed = 0.9 + Math.random() * 0.6;
     let car = { w: 46, h: 22, maxSpeed: baseSpeed, speed: baseSpeed, color: carColors[Math.floor(Math.random() * carColors.length)], lane: lane };
     if (lane === 0) { car.x = MAP_WIDTH + 60; car.y = 765; car.dirX = -1; car.dirY = 0; }
-    else if (lane === 1) { car.x = -60; car.y = 815; car.dirX = 1; car.dirY = 0; }
+    else if (lane === 1) { car.x = MAP_MIN_X - 60; car.y = 815; car.dirX = 1; car.dirY = 0; }
     else if (lane === 2) { car.w = 22; car.h = 46; car.x = 1015; car.y = MAP_HEIGHT + 60; car.dirX = 0; car.dirY = -1; }
     else if (lane === 3) { car.w = 22; car.h = 46; car.x = 965; car.y = -60; car.dirX = 0; car.dirY = 1; }
     cars.push(car);
@@ -578,9 +786,9 @@ function spawnCar(lane) {
 for (let i = 0; i < 6; i++) spawnCar(i % 4);
 
 const peds = [];
-for (let i = 0; i < 16; i++) {
+for (let i = 0; i < 20; i++) {
     peds.push({
-        x: Math.random() * (MAP_WIDTH - 40) + 20,
+        x: Math.random() * (MAP_WIDTH - MAP_MIN_X - 40) + MAP_MIN_X + 20,
         y: Math.random() * (MAP_HEIGHT - 40) + 20,
         vx: (Math.random() - 0.5) * 0.8,
         vy: (Math.random() - 0.5) * 0.8,
@@ -606,6 +814,12 @@ function useInventoryItem(id) {
     if (idx !== -1) {
         const item = inventory[idx];
         if (item.type === 'tool') return;
+        if (item.type === 'placeable') {
+            if (currentScene !== 'CITY') return;
+            toggleInventoryModal(false);
+            placingStandItemId = id;
+            return;
+        }
         hp = Math.min(100, Math.max(0, hp + (item.hp || 0)));
         happy = Math.min(100, Math.max(0, happy + (item.happy || 0)));
         item.qty--;
@@ -617,6 +831,148 @@ function useInventoryItem(id) {
 }
 
 function hasAxe() { return inventory.some(i => i.id === 'axe' && i.qty > 0); }
+
+function getQty(id) {
+    const it = inventory.find(i => i.id === id);
+    return it ? it.qty : 0;
+}
+
+function standRecipeMet() {
+    return STAND_RECIPE.need.every(n => getQty(n.id) >= n.qty);
+}
+
+function craftStand() {
+    if (!standRecipeMet()) return;
+    STAND_RECIPE.need.forEach(n => {
+        if (!n.consume) return;
+        const idx = inventory.findIndex(i => i.id === n.id);
+        if (idx !== -1) {
+            inventory[idx].qty -= n.qty;
+            if (inventory[idx].qty <= 0) inventory.splice(idx, 1);
+        }
+    });
+    addItemToInventory({ id: 'standkit', name: "Market Stand", icon: "🏪", price: 0, hp: 0, happy: 0, type: 'placeable' });
+    updateInventoryUI();
+}
+
+function cancelPlacement() { placingStandItemId = null; }
+
+function confirmStandPlacement() {
+    const idx = inventory.findIndex(i => i.id === placingStandItemId);
+    if (idx === -1) { placingStandItemId = null; return; }
+    playerStands.push({
+        id: 'stand_' + Date.now() + Math.floor(Math.random() * 10000),
+        x: player.x,
+        y: player.y,
+        stock: []
+    });
+    inventory[idx].qty--;
+    if (inventory[idx].qty <= 0) inventory.splice(idx, 1);
+    placingStandItemId = null;
+    updateInventoryUI();
+}
+
+function openStandModal(id) {
+    activeStandId = id;
+    standModalOpen = true;
+    renderStandModal();
+    document.getElementById("stand-modal").style.display = "block";
+}
+
+function closeStandModal() {
+    standModalOpen = false;
+    activeStandId = null;
+    document.getElementById("stand-modal").style.display = "none";
+}
+
+function priceAcceptChance(entry) {
+    const base = entry.basePrice || entry.price || 1;
+    const ratio = entry.price / base;
+    if (ratio <= 1.15) return 0.95;   // fair price or a small, reasonable markup — almost everyone buys
+    if (ratio <= 1.5) return 0.60;    // a bit pricey
+    if (ratio <= 2.0) return 0.30;    // overpriced
+    if (ratio <= 3.0) return 0.10;    // very overpriced
+    return 0.03;                      // outrageous — almost nobody bites
+}
+
+function stockItemOnStand(itemId) {
+    const stand = playerStands.find(s => s.id === activeStandId);
+    if (!stand) return;
+    const idx = inventory.findIndex(i => i.id === itemId);
+    if (idx === -1 || inventory[idx].qty <= 0) return;
+
+    const priceInput = document.getElementById(`price-input-${itemId}`);
+    let price = priceInput ? parseFloat(priceInput.value) : NaN;
+    if (isNaN(price) || price < 0.10) price = Math.max(0.50, inventory[idx].price || 1);
+
+    let entry = stand.stock.find(s => s.id === itemId);
+    if (entry) { entry.qty++; entry.price = price; }
+    else {
+        stand.stock.push({
+            id: itemId, name: inventory[idx].name, icon: inventory[idx].icon,
+            price, basePrice: inventory[idx].price || price, qty: 1,
+            type: inventory[idx].type, hp: inventory[idx].hp || 0, happy: inventory[idx].happy || 0
+        });
+    }
+
+    inventory[idx].qty--;
+    if (inventory[idx].qty <= 0) inventory.splice(idx, 1);
+
+    updateInventoryUI();
+    renderStandModal();
+}
+
+function takeBackFromStand(itemId) {
+    const stand = playerStands.find(s => s.id === activeStandId);
+    if (!stand) return;
+    const entry = stand.stock.find(s => s.id === itemId);
+    if (!entry) return;
+    addItemToInventory({ id: entry.id, name: entry.name, icon: entry.icon, price: entry.basePrice || entry.price, hp: entry.hp || 0, happy: entry.happy || 0, type: entry.type || 'gear' });
+    entry.qty--;
+    if (entry.qty <= 0) stand.stock = stand.stock.filter(s => s.id !== itemId);
+    renderStandModal();
+}
+
+function renderStandModal() {
+    const stand = playerStands.find(s => s.id === activeStandId);
+    if (!stand) return;
+
+    const backpackList = document.getElementById("stand-backpack-list");
+    const sellable = inventory.filter(i => i.type !== 'tool' && i.id !== 'standkit' && i.qty > 0);
+    if (sellable.length === 0) {
+        backpackList.innerHTML = `<div class="stand-empty">Nothing sellable in your backpack.</div>`;
+    } else {
+        backpackList.innerHTML = sellable.map(item => `
+            <div class="stand-row">
+                <span class="stand-row-icon">${item.icon}</span>
+                <span class="stand-row-name">${item.name}<br><span class="stand-row-sub">Qty: ${item.qty} · Fair price ~$${(item.price || 1).toFixed(2)}</span></span>
+                <input type="number" id="price-input-${item.id}" class="stand-price-input" min="0.10" step="0.10" value="${(item.price || 1).toFixed(2)}">
+                <button class="stand-btn stand-btn-stock" onclick="stockItemOnStand('${item.id}')">Stock</button>
+            </div>
+        `).join('');
+    }
+
+    const stockList = document.getElementById("stand-stock-list");
+    if (stand.stock.length === 0) {
+        stockList.innerHTML = `<div class="stand-empty">Your stand is empty. Stock it from your backpack!</div>`;
+    } else {
+        stockList.innerHTML = stand.stock.map(item => {
+            const chance = priceAcceptChance(item);
+            let tag, tagColor;
+            if (chance >= 0.9) { tag = "Fair Price"; tagColor = "#2ed573"; }
+            else if (chance >= 0.5) { tag = "A Bit Pricey"; tagColor = "#f1c40f"; }
+            else if (chance >= 0.2) { tag = "Overpriced"; tagColor = "#e67e22"; }
+            else { tag = "Outrageous!"; tagColor = "#e74c3c"; }
+            return `
+            <div class="stand-row">
+                <span class="stand-row-icon">${item.icon}</span>
+                <span class="stand-row-name">${item.name}<br><span class="stand-row-sub">Qty: ${item.qty} @ $${item.price.toFixed(2)} · <span style="color:${tagColor}; font-weight:800;">${tag}</span></span></span>
+                <button class="stand-btn stand-btn-take" onclick="takeBackFromStand('${item.id}')">Take</button>
+            </div>
+        `;
+        }).join('');
+    }
+}
 
 function updateInventoryUI() {
     const hotbarContainer = document.getElementById("hotbar-slots");
@@ -646,16 +1002,36 @@ function updateInventoryUI() {
                 <div class="qty">Qty: ${item.qty}</div>
             `;
             const btn = document.createElement("button");
-            btn.textContent = item.type === 'tool' ? "Tool" : "Use / Consume";
-            if (item.type !== 'tool') {
-                btn.onclick = () => useInventoryItem(item.id);
-            } else {
-                btn.style.background = '#888';
-            }
+            if (item.type === 'tool') { btn.textContent = "Tool"; btn.style.background = '#888'; }
+            else if (item.type === 'placeable') { btn.textContent = "Place Stand"; btn.onclick = () => useInventoryItem(item.id); }
+            else { btn.textContent = "Use / Consume"; btn.onclick = () => useInventoryItem(item.id); }
             card.appendChild(btn);
             gridContainer.appendChild(card);
         });
     }
+
+    renderCraftingUI();
+}
+
+function renderCraftingUI() {
+    const box = document.getElementById("craft-grid");
+    if (!box) return;
+    const met = standRecipeMet();
+    const reqHtml = STAND_RECIPE.need.map(n => {
+        const have = getQty(n.id);
+        const ok = n.consume ? have >= n.qty : have >= n.qty;
+        return `<span class="craft-req ${ok ? 'craft-req-ok' : ''}">${n.icon} ${n.consume ? `${have}/${n.qty}` : (have > 0 ? 'Owned' : 'Missing')} ${n.name}</span>`;
+    }).join('');
+
+    box.innerHTML = `
+        <div class="inv-card craft-card">
+            <div class="icon">🏪</div>
+            <div class="name">Market Stand</div>
+            <div class="craft-reqs">${reqHtml}</div>
+            <button id="craft-stand-btn" ${met ? '' : 'disabled'}>Craft Stand</button>
+        </div>
+    `;
+    document.getElementById("craft-stand-btn").onclick = craftStand;
 }
 
 function toggleInventoryModal(show) {
@@ -675,6 +1051,7 @@ window.addEventListener("keydown", (e) => {
     keys[keyKey] = true;
 
     if (keyKey === 'e' && !gameOver && gameRunning) {
+        if (standModalOpen) return;
         if (activeInteraction) {
             activeInteraction.action();
             updateUI();
@@ -682,8 +1059,10 @@ window.addEventListener("keydown", (e) => {
         } else {
             toggleInventoryModal();
         }
-    } else if (keyKey === 'Escape' && inventoryOpen) {
-        toggleInventoryModal(false);
+    } else if (keyKey === 'Escape') {
+        if (inventoryOpen) toggleInventoryModal(false);
+        if (standModalOpen) closeStandModal();
+        if (placingStandItemId) cancelPlacement();
     }
 });
 
@@ -693,6 +1072,19 @@ window.addEventListener("keyup", (e) => {
     keys[keyKey] = false; 
 });
 
+function formatGameTime(totalMinutes) {
+    const m = ((totalMinutes % 1440) + 1440) % 1440;
+    const hh = Math.floor(m / 60);
+    const mm = m % 60;
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    let h12 = hh % 12; if (h12 === 0) h12 = 12;
+    return `${h12}:${mm.toString().padStart(2, '0')} ${ampm}`;
+}
+
+function updateClockUI() {
+    document.getElementById("ui-time").textContent = formatGameTime(gameMinutes);
+}
+
 function startGame() {
     document.getElementById("start-screen").classList.add("hidden");
     document.getElementById("ui-bar").classList.remove("hidden");
@@ -701,7 +1093,15 @@ function startGame() {
     document.getElementById("instructions").classList.remove("hidden");
     gameRunning = true;
     updateUI();
+    updateClockUI();
     updateInventoryUI();
+    if (!clockInterval) {
+        clockInterval = setInterval(() => {
+            if (gameOver) return;
+            gameMinutes = (gameMinutes + 15) % 1440;
+            updateClockUI();
+        }, 2000);
+    }
     loop();
 }
 
@@ -725,10 +1125,42 @@ function exitShop(returnX, returnY) {
 }
 
 function buyShopItem(item) {
-    if (money >= item.price) {
+    if (money < item.price) return;
+    if (item.type === 'vehicle') {
+        const spot = findFreeParkingSpot('dealership_lot');
+        if (!spot) return; // lot is full
+        money -= item.price;
+        happy = Math.min(100, happy + (item.happy || 0));
+        spot.occupied = true;
+        const lot = parkingLots.find(l => l.id === 'dealership_lot');
+        lot.cars.push({
+            x: spot.x, y: spot.y, w: item.carW, h: item.carH,
+            length: item.carW, width: item.carH,
+            color: item.color, dirX: spot.dirX, dirY: spot.dirY,
+            owned: true, parked: true, fuel: FUEL_MAX
+        });
+    } else {
         money -= item.price;
         addItemToInventory(item);
     }
+}
+
+function enterCar(car) {
+    if (drivingCar) return;
+    drivingCar = car;
+    car.parked = false;
+    car.vx = 0; car.vy = 0;
+    player.x = car.x;
+    player.y = car.y;
+}
+
+function exitCar() {
+    if (!drivingCar) return;
+    drivingCar.parked = true;
+    drivingCar.vx = 0; drivingCar.vy = 0;
+    player.x = drivingCar.x;
+    player.y = drivingCar.y + 34;
+    drivingCar = null;
 }
 
 function chopTree(tree) {
@@ -736,7 +1168,11 @@ function chopTree(tree) {
     tree.hp--;
     if (tree.hp <= 0) {
         addItemToInventory({ id: 'wood', name: "Wood Log", icon: "🪵", price: 5, hp: 0, happy: 0, type: 'material' });
-        tree.x = Math.random() * (MAP_WIDTH - 100) + 50;
+        let tx;
+        do {
+            tx = Math.random() * (MAP_WIDTH - MAP_MIN_X - 100) + MAP_MIN_X + 50;
+        } while (tx > RIVER_X1 - 40 && tx < RIVER_X2 + 40);
+        tree.x = tx;
         tree.y = Math.random() * (MAP_HEIGHT - 100) + 50;
         tree.hp = 3;
     }
@@ -767,17 +1203,25 @@ function endGame(title, msg) {
 
 function restartGame() {
     day = 1; money = 150.0; hp = 70; happy = 70;
+    gameMinutes = 8 * 60;
     workedToday = false; gameOver = false; currentScene = 'CITY';
     inventoryOpen = false; inventory.length = 0;
+    standModalOpen = false; activeStandId = null; placingStandItemId = null;
+    playerStands.length = 0; standSaleTimer = 250;
+    const dealerLot = parkingLots.find(l => l.id === 'dealership_lot');
+    if (dealerLot) { dealerLot.cars.length = 0; dealerLot.spots.forEach(s => s.occupied = false); }
+    drivingCar = null;
     player.x = 1000; player.y = 800; player.direction = 'BACKWARD';
     document.getElementById("game-over-modal").style.display = "none";
     document.getElementById("inventory-modal").style.display = "none";
+    document.getElementById("stand-modal").style.display = "none";
     updateUI();
+    updateClockUI();
     updateInventoryUI();
 }
 
 function update() {
-    if (gameOver || !gameRunning || inventoryOpen) return;
+    if (gameOver || !gameRunning || inventoryOpen || standModalOpen) return;
 
     let dx = 0, dy = 0;
     if (keys['w'] || keys['ArrowUp']) { dy -= 1; player.direction = 'FORWARD'; }
@@ -785,45 +1229,135 @@ function update() {
     if (keys['a'] || keys['ArrowLeft']) { dx -= 1; player.direction = 'LEFT'; }
     if (keys['d'] || keys['ArrowRight']) { dx += 1; player.direction = 'RIGHT'; }
 
-    player.isMoving = (dx !== 0 || dy !== 0);
-    if (player.isMoving) {
-        player.x += dx * player.speed;
-        player.y += dy * player.speed;
-        player.animTimer += 0.2;
+    if (drivingCar) {
+        drivingCar.fuel = drivingCar.fuel === undefined ? FUEL_MAX : drivingCar.fuel;
+        const outOfFuel = drivingCar.fuel <= 0;
+        const maxSpeed = 5.7, accel = 0.05, friction = 0.94;
+        drivingCar.vx = drivingCar.vx || 0;
+        drivingCar.vy = drivingCar.vy || 0;
+
+        const targetVX = outOfFuel ? 0 : dx * maxSpeed;
+        const targetVY = outOfFuel ? 0 : dy * maxSpeed;
+        drivingCar.vx += (targetVX - drivingCar.vx) * accel;
+        drivingCar.vy += (targetVY - drivingCar.vy) * accel;
+        if (dx === 0 || outOfFuel) drivingCar.vx *= friction;
+        if (dy === 0 || outOfFuel) drivingCar.vy *= friction;
+        if (Math.abs(drivingCar.vx) < 0.04) drivingCar.vx = 0;
+        if (Math.abs(drivingCar.vy) < 0.04) drivingCar.vy = 0;
+
+        const newCarX = drivingCar.x + drivingCar.vx;
+        const newCarY = drivingCar.y + drivingCar.vy;
+        if (!blockedByRiver(newCarX, drivingCar.y)) drivingCar.x = newCarX; else drivingCar.vx = 0;
+        if (!blockedByRiver(drivingCar.x, newCarY)) drivingCar.y = newCarY; else drivingCar.vy = 0;
+
+        const speedMag = Math.abs(drivingCar.vx) + Math.abs(drivingCar.vy);
+        if (speedMag > 0.05 && !outOfFuel) {
+            drivingCar.fuel = Math.max(0, drivingCar.fuel - speedMag * 0.032);
+        }
+
+        if (Math.abs(drivingCar.vx) > Math.abs(drivingCar.vy) && Math.abs(drivingCar.vx) > 0.25) {
+            drivingCar.dirX = drivingCar.vx > 0 ? 1 : -1; drivingCar.dirY = 0;
+            drivingCar.w = drivingCar.length; drivingCar.h = drivingCar.width;
+        } else if (Math.abs(drivingCar.vy) > 0.25) {
+            drivingCar.dirY = drivingCar.vy > 0 ? 1 : -1; drivingCar.dirX = 0;
+            drivingCar.w = drivingCar.width; drivingCar.h = drivingCar.length;
+        }
+        const clampedX = Math.max(MAP_MIN_X + 15, Math.min(MAP_WIDTH - 15, drivingCar.x));
+        const clampedY = Math.max(15, Math.min(MAP_HEIGHT - 15, drivingCar.y));
+        if (clampedX !== drivingCar.x) drivingCar.vx = 0;
+        if (clampedY !== drivingCar.y) drivingCar.vy = 0;
+        drivingCar.x = clampedX;
+        drivingCar.y = clampedY;
+        player.x = drivingCar.x;
+        player.y = drivingCar.y;
+        player.isMoving = false;
+    } else {
+        player.isMoving = (dx !== 0 || dy !== 0);
+        if (player.isMoving) {
+            const newX = player.x + dx * player.speed;
+            const newY = player.y + dy * player.speed;
+            if (!blockedByRiver(newX, player.y)) player.x = newX;
+            if (!blockedByRiver(player.x, newY)) player.y = newY;
+            player.animTimer += 0.2;
+        }
     }
 
     activeInteraction = null;
 
     if (currentScene === 'CITY') {
-        player.x = Math.max(player.size, Math.min(MAP_WIDTH - player.size, player.x));
-        player.y = Math.max(player.size, Math.min(MAP_HEIGHT - player.size, player.y));
+        if (!drivingCar) {
+            player.x = Math.max(MAP_MIN_X + player.size, Math.min(MAP_WIDTH - player.size, player.x));
+            player.y = Math.max(player.size, Math.min(MAP_HEIGHT - player.size, player.y));
+        }
 
         camera.x = player.x - canvas.width / 2;
         camera.y = player.y - canvas.height / 2;
-        camera.x = Math.max(0, Math.min(MAP_WIDTH - canvas.width, camera.x));
+        camera.x = Math.max(MAP_MIN_X, Math.min(MAP_WIDTH - canvas.width, camera.x));
         camera.y = Math.max(0, Math.min(MAP_HEIGHT - canvas.height, camera.y));
 
         updateTrafficLights();
 
-        buildings.forEach(b => {
-            const centerX = b.x + b.w / 2, centerY = b.y + b.h / 2;
-            if (Math.hypot(player.x - centerX, player.y - centerY) < 110) activeInteraction = b;
-        });
-
-        parks.forEach(pk => {
-            const centerX = pk.x + pk.w / 2, centerY = pk.y + pk.h / 2;
-            if (Math.hypot(player.x - centerX, player.y - centerY) < 100) activeInteraction = pk;
-        });
-
-        trees.forEach(t => {
-            if (Math.hypot(player.x - t.x, player.y - t.y) < 35) {
-                if (hasAxe()) {
-                    activeInteraction = { text: "Chop Tree (Axe)", action: () => chopTree(t) };
-                } else {
-                    activeInteraction = { text: "Requires Axe from Hardware Store to chop", action: () => {} };
+        if (drivingCar) {
+            activeInteraction = { text: "Exit & Park Car", action: exitCar };
+            gasStations.forEach(gs => {
+                const cx = gs.x + gs.w / 2, cy = gs.y + gs.h / 2;
+                if (Math.hypot(player.x - cx, player.y - cy) < 95) {
+                    const needed = FUEL_MAX - (drivingCar.fuel || 0);
+                    if (needed > 0.5) {
+                        const cost = (Math.min(needed, money / 0.10) * 0.10).toFixed(2);
+                        activeInteraction = { text: `Fill Up Gas ($${cost})`, action: fillGas };
+                    } else {
+                        activeInteraction = { text: "Tank is Full", action: () => {} };
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            buildings.forEach(b => {
+                const centerX = b.x + b.w / 2, centerY = b.y + b.h / 2;
+                if (Math.hypot(player.x - centerX, player.y - centerY) < 110) activeInteraction = b;
+            });
+
+            parks.forEach(pk => {
+                const centerX = pk.x + pk.w / 2, centerY = pk.y + pk.h / 2;
+                if (Math.hypot(player.x - centerX, player.y - centerY) < 100) activeInteraction = pk;
+            });
+
+            trees.forEach(t => {
+                if (Math.hypot(player.x - t.x, player.y - t.y) < 35) {
+                    if (hasAxe()) {
+                        activeInteraction = { text: "Chop Tree (Axe)", action: () => chopTree(t) };
+                    } else {
+                        activeInteraction = { text: "Requires Axe from Hardware Store to chop", action: () => {} };
+                    }
+                }
+            });
+
+            playerStands.forEach(st => {
+                if (Math.hypot(player.x - st.x, player.y - st.y) < 55) {
+                    activeInteraction = { text: "Manage Market Stand", action: () => openStandModal(st.id) };
+                }
+            });
+
+            parkingLots.forEach(lot => {
+                lot.cars.forEach(car => {
+                    if (car.owned && car.parked && Math.hypot(player.x - car.x, player.y - car.y) < 40) {
+                        activeInteraction = { text: "Drive Car (WASD / Arrows)", action: () => enterCar(car) };
+                    }
+                });
+            });
+        }
+
+        standSaleTimer--;
+        if (standSaleTimer <= 0) {
+            standSaleTimer = 220 + Math.random() * 260;
+            playerStands.forEach(st => {
+                if (st.stock.length === 0) return;
+                const shoppers = peds.filter(p => !p.shopTarget && Math.hypot(p.x - st.x, p.y - st.y) < 320);
+                if (shoppers.length > 0) {
+                    shoppers[Math.floor(Math.random() * shoppers.length)].shopTarget = st.id;
+                }
+            });
+        }
 
         cars.forEach((car, index) => {
             let stopForLight = false;
@@ -850,12 +1384,12 @@ function update() {
                 car.y += car.dirY * car.speed;
             }
 
-            if (car.x < -70 || car.x > MAP_WIDTH + 70 || car.y < -70 || car.y > MAP_HEIGHT + 70) {
+            if (car.x < MAP_MIN_X - 70 || car.x > MAP_WIDTH + 70 || car.y < -70 || car.y > MAP_HEIGHT + 70) {
                 cars.splice(index, 1); 
                 spawnCar(Math.floor(Math.random() * 4));
             }
 
-            if (player.x + player.size > car.x - car.w/2 && player.x - player.size < car.x + car.w/2 &&
+            if (!drivingCar && player.x + player.size > car.x - car.w/2 && player.x - player.size < car.x + car.w/2 &&
                 player.y + player.size > car.y - car.h/2 && player.y - player.size < car.y + car.h/2) {
                 hp -= 15; updateUI(); checkStatus();
                 player.x += car.dirX * 15; player.y += car.dirY * 15;
@@ -863,17 +1397,51 @@ function update() {
         });
 
         peds.forEach(p => {
-            p.x += p.vx; p.y += p.vy; 
-            p.animTimer += 0.15;
-            p.changeTimer--;
-            if (p.changeTimer <= 0) {
-                p.vx = (Math.random() - 0.5) * 0.8; p.vy = (Math.random() - 0.5) * 0.8;
-                p.changeTimer = Math.random() * 120 + 30;
-                p.dir = Math.abs(p.vx) > Math.abs(p.vy) ? (p.vx > 0 ? 'RIGHT' : 'LEFT') : (p.vy > 0 ? 'BACKWARD' : 'FORWARD');
+            if (p.shopTarget) {
+                const stand = playerStands.find(s => s.id === p.shopTarget);
+                if (!stand || stand.stock.length === 0) {
+                    p.shopTarget = null;
+                } else {
+                    const dist = Math.hypot(stand.x - p.x, stand.y - p.y);
+                    if (dist < 20) {
+                        const affordable = stand.stock.filter(it => priceAcceptChance(it) >= Math.random());
+                        if (affordable.length > 0) {
+                            const item = affordable[Math.floor(Math.random() * affordable.length)];
+                            money += item.price;
+                            updateUI();
+                            item.qty--;
+                            if (item.qty <= 0) stand.stock = stand.stock.filter(s => s !== item);
+                            if (standModalOpen && activeStandId === stand.id) renderStandModal();
+                        }
+                        p.shopTarget = null;
+                        p.changeTimer = Math.random() * 120 + 30;
+                    } else {
+                        p.vx = (stand.x - p.x) / dist * 0.9;
+                        p.vy = (stand.y - p.y) / dist * 0.9;
+                        p.dir = Math.abs(p.vx) > Math.abs(p.vy) ? (p.vx > 0 ? 'RIGHT' : 'LEFT') : (p.vy > 0 ? 'BACKWARD' : 'FORWARD');
+                    }
+                }
+            } else {
+                p.changeTimer--;
+                if (p.changeTimer <= 0) {
+                    p.vx = (Math.random() - 0.5) * 0.8; p.vy = (Math.random() - 0.5) * 0.8;
+                    p.changeTimer = Math.random() * 120 + 30;
+                    p.dir = Math.abs(p.vx) > Math.abs(p.vy) ? (p.vx > 0 ? 'RIGHT' : 'LEFT') : (p.vy > 0 ? 'BACKWARD' : 'FORWARD');
+                }
             }
-            if (p.x < 10 || p.x > MAP_WIDTH - 10) p.vx *= -1;
+            p.x += p.vx; p.y += p.vy;
+            p.animTimer += 0.15;
+            if (blockedByRiver(p.x, p.y)) {
+                p.x -= p.vx; p.y -= p.vy;
+                p.vx *= -1; p.vy *= -1;
+            }
+            if (p.x < MAP_MIN_X + 10 || p.x > MAP_WIDTH - 10) p.vx *= -1;
             if (p.y < 10 || p.y > MAP_HEIGHT - 10) p.vy *= -1;
         });
+
+        if (placingStandItemId) {
+            activeInteraction = { text: "Place Market Stand Here", action: confirmStandPlacement };
+        }
 
     } else {
         player.x = Math.max(player.size, Math.min(900 - player.size, player.x));
@@ -889,11 +1457,12 @@ function update() {
         if (player.y > 600 && player.x > 400 && player.x < 500) {
             let exitPos = { x: 1000, y: 800 };
             if (currentScene === 'GROCERY') exitPos = { x: 320, y: 380 };
-            else if (currentScene === 'HARDWARE') exitPos = { x: 1020, y: 380 };
+            else if (currentScene === 'HARDWARE') exitPos = { x: -440, y: 380 };
             else if (currentScene === 'THRIFT') exitPos = { x: 1620, y: 380 };
             else if (currentScene === 'FASTFOOD') exitPos = { x: 1620, y: 1280 };
             else if (currentScene === 'WORK') exitPos = { x: 320, y: 1280 };
             else if (currentScene === 'PHARMACY') exitPos = { x: 800, y: 1280 };
+            else if (currentScene === 'DEALERSHIP') exitPos = { x: -420, y: 1280 };
 
             activeInteraction = { text: "Exit Building", action: () => exitShop(exitPos.x, exitPos.y) };
         }
@@ -904,14 +1473,19 @@ function update() {
         else if (currentScene === 'THRIFT') activeItemsList = thriftItemsMap;
         else if (currentScene === 'FASTFOOD') activeItemsList = fastFoodItemsMap;
         else if (currentScene === 'PHARMACY') activeItemsList = pharmacyItemsMap;
+        else if (currentScene === 'DEALERSHIP') activeItemsList = dealershipItemsMap;
 
         activeItemsList.forEach(item => {
             const centerX = item.x + item.w / 2, centerY = item.y + item.h / 2;
             if (Math.hypot(player.x - centerX, player.y - centerY) < 45) {
-                activeInteraction = {
-                    text: `Buy ${item.name} ($${item.price.toFixed(2)})`,
-                    action: () => buyShopItem(item)
-                };
+                if (item.type === 'vehicle' && !findFreeParkingSpot('dealership_lot')) {
+                    activeInteraction = { text: `${item.name} - Parking Lot Full!`, action: () => {} };
+                } else {
+                    activeInteraction = {
+                        text: `Buy ${item.name} ($${item.price.toFixed(2)})`,
+                        action: () => buyShopItem(item)
+                    };
+                }
             }
         });
 
@@ -1333,10 +1907,12 @@ function draw() {
         ctx.translate(-camera.x, -camera.y);
 
         drawCityScene();
-        drawCharacter(ctx, player.x, player.y, player.direction, null, player.isMoving, player.animTimer);
+        if (!drivingCar) drawCharacter(ctx, player.x, player.y, player.direction, null, player.isMoving, player.animTimer);
+        if (placingStandItemId) drawMarketStand({ x: player.x, y: player.y, stock: [] }, 0.55);
 
         ctx.restore();
         drawMiniMap();
+        drawFuelGauge();
 
     } else {
         drawGenericShopScene(currentScene);
@@ -1350,9 +1926,289 @@ function draw() {
     }
 }
 
+function drawMarketStand(stand, alpha) {
+    ctx.save();
+    if (alpha !== undefined) ctx.globalAlpha = alpha;
+    const x = stand.x, y = stand.y, w = 74, h = 18;
+
+    // Ground shadow
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath(); ctx.ellipse(x, y + 14, w / 2, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Legs
+    ctx.fillStyle = "#5c3a21";
+    ctx.fillRect(x - w / 2 + 5, y - 2, 6, 16);
+    ctx.fillRect(x + w / 2 - 11, y - 2, 6, 16);
+
+    // Counter top
+    const counterGrad = ctx.createLinearGradient(0, y - 10, 0, y + 8);
+    counterGrad.addColorStop(0, "#d99a5b");
+    counterGrad.addColorStop(1, "#a86a33");
+    ctx.fillStyle = counterGrad;
+    ctx.beginPath(); ctx.roundRect(x - w / 2, y - 10, w, h, 4); ctx.fill();
+    ctx.strokeStyle = "#6b4423"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x - w / 2 + 3, y - 6); ctx.lineTo(x + w / 2 - 3, y - 6); ctx.stroke();
+
+    // Awning
+    ctx.fillStyle = "#e74c3c";
+    ctx.beginPath();
+    ctx.moveTo(x - w / 2 - 8, y - 10);
+    ctx.lineTo(x + w / 2 + 8, y - 10);
+    ctx.lineTo(x + w / 2 - 2, y - 34);
+    ctx.lineTo(x - w / 2 + 2, y - 34);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#a92a2a"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = "#f5f6fa";
+    for (let i = 0; i < 4; i++) {
+        const sx1 = x - w / 2 - 6 + i * (w / 3.6);
+        ctx.beginPath();
+        ctx.moveTo(sx1, y - 10); ctx.lineTo(sx1 + 8, y - 10);
+        ctx.lineTo(sx1 + 6, y - 22); ctx.lineTo(sx1 + 2, y - 22);
+        ctx.closePath(); ctx.fill();
+    }
+
+    // Sign post + board
+    ctx.fillStyle = "#6b4423"; ctx.fillRect(x - 2, y - 44, 4, 14);
+    ctx.fillStyle = "#fff8e7";
+    ctx.beginPath(); ctx.roundRect(x - 26, y - 58, 52, 15, 3); ctx.fill();
+    ctx.strokeStyle = "#6b4423"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = "#111"; ctx.font = "800 9px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("MY STAND", x, y - 47);
+
+    // Stocked items laid out on the counter
+    if (stand.stock.length === 0) {
+        ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.font = "700 9px 'Poppins', 'Segoe UI', sans-serif";
+        ctx.fillText("Empty - restock!", x, y + 3);
+    } else {
+        const shown = stand.stock.slice(0, 3);
+        shown.forEach((it, i) => {
+            const ix = x - (shown.length - 1) * 11 + i * 22;
+            ctx.font = "15px 'Segoe UI', sans-serif";
+            ctx.fillText(it.icon, ix, y + 4);
+        });
+    }
+
+    ctx.restore();
+}
+
+function drawParkingLot(lot) {
+    ctx.save();
+
+    // Curb border
+    ctx.fillStyle = sidewalkPattern;
+    ctx.fillRect(lot.x - 8, lot.y - 8, lot.w + 16, lot.h + 16);
+
+    // Asphalt surface
+    ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(lot.x + 4, lot.y + 4, lot.w, lot.h);
+    ctx.fillStyle = asphaltPattern; ctx.fillRect(lot.x, lot.y, lot.w, lot.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.lineWidth = 2;
+    ctx.strokeRect(lot.x + 2, lot.y + 2, lot.w - 4, lot.h - 4);
+
+    // Painted parking space outlines
+    ctx.strokeStyle = "#f5f6fa"; ctx.lineWidth = 2;
+    lot.spots.forEach(spot => {
+        const sw = (spot.w || 60) + 16, sh = (spot.h || 30) + 22;
+        ctx.strokeRect(spot.x - sw / 2, spot.y - sh / 2, sw, sh);
+    });
+
+    // "P" parking sign
+    const signX = lot.x + lot.w / 2;
+    ctx.fillStyle = "#6b4423"; ctx.fillRect(signX - 2, lot.y - 10, 4, 12);
+    ctx.fillStyle = "#2980b9";
+    ctx.beginPath(); ctx.roundRect(signX - 15, lot.y - 40, 30, 30, 5); ctx.fill();
+    ctx.strokeStyle = "#1c5980"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "900 17px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("P", signX, lot.y - 19);
+
+    ctx.restore();
+
+    lot.cars.forEach(c => drawDetailedCar(c));
+}
+
+function drawRiver() {
+    const cx1 = RIVER_X1, cx2 = RIVER_X2;
+    const amp = 16, waveLen = 190;
+    ctx.save();
+
+    // Soft muddy bank fringe (slightly wider than the water, so the grass edge looks eroded not razor-cut)
+    ctx.fillStyle = "rgba(50,40,25,0.35)";
+    ctx.beginPath();
+    ctx.moveTo(cx1 - 10 + amp * Math.sin(0 / waveLen), -10);
+    for (let y = 0; y <= MAP_HEIGHT + 10; y += 20) ctx.lineTo(cx1 - 10 + amp * Math.sin(y / waveLen), y);
+    for (let y = MAP_HEIGHT + 10; y >= -10; y -= 20) ctx.lineTo(cx2 + 10 + amp * Math.sin((y / waveLen) + 1.6), y);
+    ctx.closePath(); ctx.fill();
+
+    // Water body with a wavy, organic bank line instead of a hard rectangle
+    const riverGrad = ctx.createLinearGradient(cx1, 0, cx2, 0);
+    riverGrad.addColorStop(0, "#1c5f85"); riverGrad.addColorStop(0.5, "#3ea0dd"); riverGrad.addColorStop(1, "#1c5f85");
+    ctx.fillStyle = riverGrad;
+    ctx.beginPath();
+    ctx.moveTo(cx1 + amp * Math.sin(0 / waveLen), -10);
+    for (let y = 0; y <= MAP_HEIGHT + 10; y += 20) ctx.lineTo(cx1 + amp * Math.sin(y / waveLen), y);
+    for (let y = MAP_HEIGHT + 10; y >= -10; y -= 20) ctx.lineTo(cx2 + amp * Math.sin((y / waveLen) + 1.6), y);
+    ctx.closePath(); ctx.fill();
+
+    // Gentle current ripple lines that follow the same wave, skipping the area under the bridge deck
+    ctx.strokeStyle = "rgba(255,255,255,0.22)"; ctx.lineWidth = 2;
+    for (let ry = 20; ry < MAP_HEIGHT; ry += 55) {
+        if (ry > 700 && ry < 900) continue;
+        const midX = (cx1 + cx2) / 2 + amp * Math.sin(ry / waveLen);
+        ctx.beginPath(); ctx.moveTo(midX - 46, ry); ctx.quadraticCurveTo(midX, ry + 8, midX + 46, ry); ctx.stroke();
+    }
+
+    // A few lily pads / rocks near the banks for natural detail
+    const decorSpots = [180, 470, 1010, 1180, 1420];
+    decorSpots.forEach((dy, i) => {
+        const side = i % 2 === 0 ? cx1 + 18 : cx2 - 18;
+        const dx = side + amp * Math.sin(dy / waveLen);
+        if (i % 2 === 0) {
+            ctx.fillStyle = "#2e8b57";
+            ctx.beginPath(); ctx.ellipse(dx, dy, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 1; ctx.stroke();
+        } else {
+            ctx.fillStyle = "#8d99a6";
+            ctx.beginPath(); ctx.ellipse(dx, dy, 7, 5, 0.4, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+
+    ctx.restore();
+}
+
+function drawBridge() {
+    const bx1 = RIVER_X1, bx2 = RIVER_X2;
+    ctx.save();
+
+    // Support pylons rising from the river into the deck
+    ctx.fillStyle = "#7f8c8d";
+    [bx1 + 22, 0, bx2 - 22].forEach(px => { ctx.fillRect(px - 9, 745, 18, 110); });
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    [bx1 + 22, 0, bx2 - 22].forEach(px => { ctx.fillRect(px + 5, 745, 4, 110); });
+
+    // Concrete bridge deck (over the existing road band)
+    const deckGrad = ctx.createLinearGradient(0, 745, 0, 855);
+    deckGrad.addColorStop(0, "#9aa4a9"); deckGrad.addColorStop(1, "#7c8a90");
+    ctx.fillStyle = deckGrad;
+    ctx.fillRect(bx1, 745, bx2 - bx1, 110);
+    ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 2; ctx.strokeRect(bx1, 745, bx2 - bx1, 110);
+
+    // Lane marking across the deck
+    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 3; ctx.setLineDash([14, 12]);
+    ctx.beginPath(); ctx.moveTo(bx1, 800); ctx.lineTo(bx2, 800); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Guardrails
+    ctx.fillStyle = "#bdc3c7";
+    ctx.fillRect(bx1, 743, bx2 - bx1, 5);
+    ctx.fillRect(bx1, 852, bx2 - bx1, 5);
+    ctx.fillStyle = "#ecf0f1";
+    for (let gx = bx1 + 4; gx < bx2; gx += 20) {
+        ctx.fillRect(gx, 733, 5, 12);
+        ctx.fillRect(gx, 855, 5, 12);
+    }
+
+    // Lamp posts
+    [bx1 + 14, bx2 - 14].forEach(px => {
+        ctx.fillStyle = "#2c3e50";
+        ctx.fillRect(px - 2, 705, 4, 30);
+        ctx.beginPath(); ctx.arc(px, 702, 6, 0, Math.PI * 2); ctx.fillStyle = "#fdf2b3"; ctx.fill();
+        ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+
+    ctx.restore();
+}
+
+function drawHouse(h) {
+    ctx.save();
+
+    // Yard patch
+    ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(h.x + 6, h.y + 6, h.w, h.h);
+
+    // Walls
+    const wallGrad = ctx.createLinearGradient(h.x, h.y + 30, h.x, h.y + h.h);
+    wallGrad.addColorStop(0, shadeColor(h.wall, 10));
+    wallGrad.addColorStop(1, shadeColor(h.wall, -12));
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(h.x, h.y + 32, h.w, h.h - 32);
+    ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(h.x, h.y + 32, h.w, h.h - 32);
+
+    // Peaked roof
+    ctx.fillStyle = h.roof;
+    ctx.beginPath();
+    ctx.moveTo(h.x - 10, h.y + 34);
+    ctx.lineTo(h.x + h.w / 2, h.y - 10);
+    ctx.lineTo(h.x + h.w + 10, h.y + 34);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.beginPath();
+    ctx.moveTo(h.x - 10, h.y + 34); ctx.lineTo(h.x + h.w / 2, h.y - 10); ctx.lineTo(h.x + h.w / 2, h.y + 34);
+    ctx.closePath(); ctx.fill();
+
+    // Windows
+    const winGrad = ctx.createLinearGradient(0, h.y + 50, 0, h.y + 74);
+    winGrad.addColorStop(0, "#bfe6f7"); winGrad.addColorStop(1, "#6fb8d8");
+    ctx.fillStyle = winGrad;
+    ctx.fillRect(h.x + 14, h.y + 50, 22, 24);
+    ctx.fillRect(h.x + h.w - 36, h.y + 50, 22, 24);
+    ctx.strokeStyle = "#5c3a21"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(h.x + 14, h.y + 50, 22, 24);
+    ctx.strokeRect(h.x + h.w - 36, h.y + 50, 22, 24);
+
+    // Door
+    ctx.fillStyle = h.door;
+    ctx.fillRect(h.x + h.w / 2 - 12, h.y + h.h - 42, 24, 42);
+    ctx.fillStyle = "#f1c40f";
+    ctx.beginPath(); ctx.arc(h.x + h.w / 2 + 8, h.y + h.h - 22, 1.6, 0, Math.PI * 2); ctx.fill();
+
+    // Little walkway
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillRect(h.x + h.w / 2 - 10, h.y + h.h, 20, 12);
+
+    ctx.restore();
+}
+
+function drawGasStation(gs) {
+    ctx.save();
+
+    ctx.fillStyle = sidewalkPattern; ctx.fillRect(gs.x - 8, gs.y - 8, gs.w + 16, gs.h + 16);
+    ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(gs.x + 4, gs.y + 4, gs.w, gs.h);
+    ctx.fillStyle = asphaltPattern; ctx.fillRect(gs.x, gs.y, gs.w, gs.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.15)"; ctx.lineWidth = 2;
+    ctx.strokeRect(gs.x + 2, gs.y + 2, gs.w - 4, gs.h - 4);
+
+    // Canopy support posts
+    ctx.fillStyle = "#c0392b";
+    ctx.fillRect(gs.x + 14, gs.y + 12, 9, gs.h - 24);
+    ctx.fillRect(gs.x + gs.w - 23, gs.y + 12, 9, gs.h - 24);
+
+    // Canopy roof
+    const roofGrad = ctx.createLinearGradient(gs.x, gs.y, gs.x, gs.y + 20);
+    roofGrad.addColorStop(0, "#e74c3c"); roofGrad.addColorStop(1, "#c0392b");
+    ctx.fillStyle = roofGrad;
+    ctx.fillRect(gs.x + 4, gs.y + 2, gs.w - 8, 20);
+    ctx.strokeStyle = "#922b21"; ctx.lineWidth = 2; ctx.strokeRect(gs.x + 4, gs.y + 2, gs.w - 8, 20);
+    ctx.fillStyle = "#fff"; ctx.font = "900 12px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("⛽ FUEL STOP", gs.x + gs.w / 2, gs.y + 16);
+
+    // Fuel pump islands
+    [gs.x + gs.w * 0.32, gs.x + gs.w * 0.68].forEach(px => {
+        ctx.fillStyle = "#bfc9ca"; ctx.fillRect(px - 15, gs.y + gs.h - 32, 30, 11);
+        ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 1; ctx.strokeRect(px - 15, gs.y + gs.h - 32, 30, 11);
+        ctx.fillStyle = "#2c3e50"; ctx.fillRect(px - 8, gs.y + gs.h - 50, 16, 22);
+        ctx.fillStyle = "#f1c40f"; ctx.fillRect(px - 8, gs.y + gs.h - 50, 16, 6);
+        ctx.strokeStyle = "#1b2631"; ctx.lineWidth = 1.5; ctx.strokeRect(px - 8, gs.y + gs.h - 50, 16, 22);
+        ctx.fillStyle = "#7f8c8d"; ctx.fillRect(px - 1, gs.y + gs.h - 28, 2, 10);
+    });
+
+    ctx.restore();
+}
+
 function drawCityScene() {
     // Grass Ground (tiled texture instead of flat fill)
-    ctx.fillStyle = grassPattern; ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+    ctx.fillStyle = grassPattern; ctx.fillRect(MAP_MIN_X, 0, MAP_WIDTH - MAP_MIN_X, MAP_HEIGHT);
+    drawRiver();
 
     // Parks
     parks.forEach(pk => {
@@ -1409,11 +2265,49 @@ function drawCityScene() {
 
     // Road Markings
     ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 3; ctx.setLineDash([16, 14]);
-    ctx.beginPath(); ctx.moveTo(0, 800); ctx.lineTo(MAP_WIDTH, 800); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(MAP_MIN_X, 800); ctx.lineTo(MAP_WIDTH, 800); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(1000, 0); ctx.lineTo(1000, MAP_HEIGHT); ctx.stroke();
     ctx.setLineDash([]);
 
-    // Crosswalk Lines
+    // Extra highway lane striping along the outskirts stretch
+    ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]);
+    ctx.beginPath(); ctx.moveTo(MAP_MIN_X, 775); ctx.lineTo(-140, 775); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(MAP_MIN_X, 825); ctx.lineTo(-140, 825); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Highway speed sign at the outskirts entrance (just past the bridge)
+    ctx.save();
+    ctx.translate(-165, 700);
+    ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(-1, 2, 6, 48);
+    ctx.fillStyle = "#6b4423"; ctx.fillRect(-3, 0, 6, 48);
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.roundRect(-26, -46, 52, 46, 4); ctx.fill();
+    ctx.strokeStyle = "#111"; ctx.lineWidth = 3; ctx.strokeRect(-26, -46, 52, 46);
+    ctx.fillStyle = "#111"; ctx.font = "900 9px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("SPEED LIMIT", 0, -32);
+    ctx.font = "900 19px 'Poppins', 'Segoe UI', sans-serif";
+    ctx.fillText("45", 0, -13);
+    ctx.restore();
+
+    // End-of-highway barrier at the far western edge
+    ctx.save();
+    ctx.translate(MAP_MIN_X + 70, 800);
+    ctx.fillStyle = "#e74c3c";
+    for (let i = -2; i <= 2; i++) {
+        ctx.fillRect(i * 14 - 5, -45, 10, 90);
+    }
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+    for (let i = -2; i <= 2; i++) {
+        ctx.strokeRect(i * 14 - 5, -45, 10, 90);
+    }
+    ctx.fillStyle = "#fff8e7";
+    ctx.beginPath(); ctx.roundRect(-55, -78, 110, 24, 4); ctx.fill();
+    ctx.strokeStyle = "#6b4423"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#111"; ctx.font = "800 11px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("END OF HIGHWAY", 0, -61);
+    ctx.restore();
+
+    // Crosswalk Lines (main intersection)
     ctx.fillStyle = "#f5f6fa";
     for(let i = 755; i < 845; i += 12) {
         ctx.fillRect(930, i, 15, 6);
@@ -1424,8 +2318,44 @@ function drawCityScene() {
         ctx.fillRect(i, 855, 6, 15);
     }
 
+    // Extra midblock crosswalks near each row of stores
+    function drawMidblockCrosswalk(cx) {
+        ctx.fillStyle = "#f5f6fa";
+        for (let i = cx - 42; i < cx + 42; i += 12) {
+            ctx.fillRect(i, 730, 6, 15);
+            ctx.fillRect(i, 855, 6, 15);
+        }
+    }
+    [320, 800, 1620].forEach(drawMidblockCrosswalk);
+
+    // Neighborhood street markings (the turn off the main road, east side)
+    ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]);
+    ctx.beginPath(); ctx.moveTo(2200, 850); ctx.lineTo(2200, MAP_HEIGHT); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // "Maple Heights" neighborhood entrance sign
+    ctx.save();
+    ctx.translate(2150, 700);
+    ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(-1, 2, 6, 48);
+    ctx.fillStyle = "#6b4423"; ctx.fillRect(-3, 0, 6, 48);
+    ctx.fillStyle = "#fff8e7";
+    ctx.beginPath(); ctx.roundRect(-72, -46, 144, 40, 6); ctx.fill();
+    ctx.strokeStyle = "#6b4423"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#111"; ctx.font = "800 10px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("WELCOME TO", 0, -30);
+    ctx.font = "900 16px 'Poppins', 'Segoe UI', sans-serif";
+    ctx.fillText("Maple Heights", 0, -13);
+    ctx.restore();
+
+    drawBridge();
+    gasStations.forEach(gs => drawGasStation(gs));
+
+    parkingLots.forEach(lot => drawParkingLot(lot));
+
     busStops.forEach(bs => drawBusStopShelter(bs));
     buildings.forEach(b => drawDetailedBuilding(b));
+    houses.forEach(h => drawHouse(h));
+    playerStands.forEach(st => drawMarketStand(st));
     drawTrafficLightPoles();
 
     peds.forEach(p => drawCharacter(ctx, p.x, p.y, p.dir, p.look, true, p.animTimer));
@@ -1461,6 +2391,9 @@ function drawGenericShopScene(scene) {
     } else if (scene === 'PHARMACY') {
         title = "💊 CITY CARE PHARMACY 🩹";
         items = pharmacyItemsMap;
+    } else if (scene === 'DEALERSHIP') {
+        title = "🚗 SAM'S AUTOCARS 🛻";
+        aisles = dealershipAisles; items = dealershipItemsMap;
     } else if (scene === 'WORK') {
         title = "🏢 METRO OFFICE WORKPLACE 💼";
         ctx.fillStyle = "#34495e"; ctx.fillRect(350, 180, 200, 100);
@@ -1513,11 +2446,55 @@ function drawGenericShopScene(scene) {
     shopNPCs.forEach(s => drawCharacter(ctx, s.x, s.y, s.dir, s.look, true, s.animTimer));
 }
 
+function drawFuelGauge() {
+    if (!drivingCar) return;
+    const fuel = drivingCar.fuel === undefined ? FUEL_MAX : drivingCar.fuel;
+    const speedUnits = Math.hypot(drivingCar.vx || 0, drivingCar.vy || 0);
+    const mph = Math.round(speedUnits * 13);
+    const gx = 20, gy = 20, gw = 170, gh = 16, panelH = 118;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+    ctx.beginPath(); ctx.roundRect(gx - 10, gy - 10, gw + 20, panelH, 10);
+    ctx.fillStyle = "rgba(10,12,14,0.82)"; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    // Speedometer
+    ctx.fillStyle = "#fff"; ctx.font = "800 11px 'Poppins', 'Segoe UI', sans-serif"; ctx.textAlign = "left";
+    ctx.fillText("🚗 SPEED", gx, gy + 4);
+    ctx.font = "900 22px 'Poppins', 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#55efc4";
+    ctx.fillText(`${mph} MPH`, gx, gy + 27);
+
+    // Fuel gauge
+    ctx.font = "800 11px 'Poppins', 'Segoe UI', sans-serif"; ctx.fillStyle = "#fff";
+    ctx.fillText("⛽ FUEL", gx, gy + 44);
+    ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 2;
+    ctx.strokeRect(gx, gy + 50, gw, gh);
+    const pct = Math.max(0, fuel) / FUEL_MAX;
+    const fillColor = pct < 0.2 ? "#e74c3c" : pct < 0.5 ? "#f1c40f" : "#2ed573";
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(gx + 2, gy + 52, Math.max(0, (gw - 4) * pct), gh - 4);
+
+    if (fuel <= 0) {
+        ctx.fillStyle = "#ff6b6b"; ctx.font = "800 10px 'Poppins', 'Segoe UI', sans-serif";
+        ctx.fillText("OUT OF FUEL — find a gas station!", gx, gy + 50 + gh + 15);
+    } else if (fuel < 20) {
+        ctx.fillStyle = "#f1c40f"; ctx.font = "800 10px 'Poppins', 'Segoe UI', sans-serif";
+        ctx.fillText("Low fuel!", gx, gy + 50 + gh + 15);
+    }
+    ctx.restore();
+}
+
 function drawMiniMap() {
     const mmW = 160, mmH = 120;
     const mmX = canvas.width - mmW - 15, mmY = 15;
-    const scaleX = mmW / MAP_WIDTH;
+    const worldW = MAP_WIDTH - MAP_MIN_X;
+    const scaleX = mmW / worldW;
     const scaleY = mmH / MAP_HEIGHT;
+    const toMiniX = (x) => mmX + (x - MAP_MIN_X) * scaleX;
+    const toMiniY = (y) => mmY + y * scaleY;
     const radius = 10;
 
     ctx.save();
@@ -1529,24 +2506,40 @@ function drawMiniMap() {
     ctx.save();
     ctx.beginPath(); ctx.roundRect(mmX, mmY, mmW, mmH, radius); ctx.clip();
 
+    // subtle divider marking the outskirts chunk boundary
+    ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(toMiniX(0), mmY); ctx.lineTo(toMiniX(0), mmY + mmH); ctx.stroke();
+    ctx.setLineDash([]);
+
     parks.forEach(pk => {
         ctx.fillStyle = "#27ae60";
-        ctx.fillRect(mmX + pk.x * scaleX, mmY + pk.y * scaleY, pk.w * scaleX, pk.h * scaleY);
+        ctx.fillRect(toMiniX(pk.x), toMiniY(pk.y), pk.w * scaleX, pk.h * scaleY);
     });
 
     ctx.fillStyle = "rgba(160,171,176,0.65)";
-    roads.forEach(r => ctx.fillRect(mmX + r.x * scaleX, mmY + r.y * scaleY, r.w * scaleX, r.h * scaleY));
+    roads.forEach(r => ctx.fillRect(toMiniX(r.x), toMiniY(r.y), r.w * scaleX, r.h * scaleY));
+
+    ctx.fillStyle = "rgba(120,130,135,0.85)";
+    parkingLots.forEach(lot => ctx.fillRect(toMiniX(lot.x), toMiniY(lot.y), lot.w * scaleX, lot.h * scaleY));
+
+    ctx.fillStyle = "#e74c3c";
+    gasStations.forEach(gs => ctx.fillRect(toMiniX(gs.x), toMiniY(gs.y), gs.w * scaleX, gs.h * scaleY));
 
     buildings.forEach(b => {
         ctx.fillStyle = b.color;
-        ctx.fillRect(mmX + b.x * scaleX, mmY + b.y * scaleY, b.w * scaleX, b.h * scaleY);
+        ctx.fillRect(toMiniX(b.x), toMiniY(b.y), b.w * scaleX, b.h * scaleY);
+    });
+
+    houses.forEach(h => {
+        ctx.fillStyle = h.roof;
+        ctx.fillRect(toMiniX(h.x), toMiniY(h.y), h.w * scaleX, h.h * scaleY);
     });
 
     ctx.fillStyle = "rgba(0,255,255,0.25)";
-    ctx.beginPath(); ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(toMiniX(player.x), toMiniY(player.y), 6, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#00ffff";
     ctx.beginPath();
-    ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 3, 0, Math.PI * 2);
+    ctx.arc(toMiniX(player.x), toMiniY(player.y), 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1; ctx.stroke();
     ctx.restore();
